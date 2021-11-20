@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Sneedfarm</title>
+    <link rel="stylesheet" href="GamePage_Style.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container">
+        <div class="header__inside">
+          <div class="header__title">SeedFarm</div>
+          <div class="header__nav">
+            <div class="btn Main_Page_btn">
+              <a href="/MainPage.html">Main Page</a>
+            </div>
+            <div class="btn"><a>Game</a></div>
+          </div>
+          <div class="metamask__outer">
+            <div id="eth-button" class="metamask">MetaMask</div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="body">
+      <div class="Game__container">
+        <div class="canvas">
+          <canvas
+            id="playground"
+            width="1280"
+            height="610"
+            class="game"
+          ></canvas>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="Scripts/main.js"></script>
+    <script type="module" src="Scripts/Metamask/metamask.js"></script>
+  </body>
+</html>
