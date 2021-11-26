@@ -2,16 +2,14 @@ import { STATE } from "./game.js";
 import { WIDTH, HEIGHT } from "./game.js";
 export default class Mouse {
     
-
     onMapChanged = new CustomEvent("onMapChanged", {
         bubbles: true, 
     });
 
     is_dragging = false; 
 
-    constructor(canvas, game){
+    constructor(canvas){
         this._canvas = canvas; 
-        this._game = game; 
 
         this.mouseX = 0; 
         this.mouseY = 0; 
@@ -22,6 +20,10 @@ export default class Mouse {
         this.mouseDeltaY = 0; 
         this.prevMouseX = 0; 
         this.prevMouseY = 0;  
+    }
+
+    init(game){
+        this._game = game; 
     }
 
     listenForEvents(state) {
@@ -42,19 +44,7 @@ export default class Mouse {
         }
     }
 
-    onMouseDown(e) { 
-        console.clear();
-        this.prevMouseX = this.mouseX; 
-        this.prevMouseY = this.mouseY; 
-        this.is_dragging = true; 
-    }
-
-    onMouseUp(e) {
-        this.is_dragging = false; 
-    }
-
-
-    math(mouseAbsX, mouseAbsY){
+     math(mouseAbsX, mouseAbsY){
         const width = WIDTH / 2; 
         const height = HEIGHT / 2; 
         
@@ -62,8 +52,8 @@ export default class Mouse {
         var offGameX = this._game._currentCameraOffset.x; 
         var offGameY = this._game._currentCameraOffset.y; 
 
-        var offX = (3 + offGameX) * width + width ; 
-        var offY = (2 + offGameY) * height + height;
+        var offX = (0 + offGameX) * width; 
+        var offY = (6.5 + offGameY) * height + height;
 
         //console.log(offX, offY);
 
@@ -79,12 +69,4 @@ export default class Mouse {
         this.tileX = Math.floor(a) - 1;
         this.tileY = -Math.floor(b); 
       }
-
-      handleClick(e){
-        console.log('click');
-        //this._canvas.dispatchEvent(this.onMapChanged);
-        //this.dispatchEvent(this.onMapChanged);
-      }
-
-
 }

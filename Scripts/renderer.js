@@ -1,28 +1,19 @@
 import Loader from "./loader.js";
 import { WIDTH, HEIGHT } from "./game.js";
 import { DATA_PROVIDER } from "./game.js";
+import { MAP_SIZE } from "./game.js";
 export default class Renderer {
-  WIDTH = 128;
-  HEIGHT = 64;
 
-  constructor(ctx, game, map) {
+  constructor(ctx, map, loader) {
     this._ctx = ctx;
-    this._game = game;
     this._map = map;
 
-    this._loader = new Loader();
+    this._loader = loader; 
   }
 
-  loadImages() {
-    return [
-      this._loader.loadImage("grid", "../Assets/grid.png"),
-      this._loader.loadImage("tiles", "../Assets/seasons_tiles.png"),
-      this._loader.loadImage("current", "../Assets/current_tile.png"),
-      this._loader.loadImage("edited", "../Assets/edited_tile.png"),
-    ];
-  }
+  init(game) {
+    this._game = game; 
 
-  init() {
     this.gridAtlas = this._loader.getImage("grid");
     this.tileAtlas = this._loader.getImage("tiles");
     this.currentTile = this._loader.getImage("current");
@@ -64,8 +55,8 @@ export default class Renderer {
       0,
       this._game._currentTile.x,
       this._game._currentTile.y,
-      2/* + this._game._currentCameraOffset.x*/,
-      2/* + this._game._currentCameraOffset.y*/
+      0/* + this._game._currentCameraOffset.x*/,
+      4/* + this._game._currentCameraOffset.y*/
     );
   }
 
@@ -73,8 +64,9 @@ export default class Renderer {
     const textUI = [
       "CurrentTileX: " + this._game._currentTile.x,
       "CurrentTileY: " + this._game._currentTile.y,
-      "CurrentMousePosX: " + this._game._currentCameraOffset.x,
+      /*"CurrentMousePosX: " + this._game._currentCameraOffset.x,
       "CurrentMousePosY: " + this._game._currentCameraOffset.y,
+      */
     ];
     this._ctx.font = "22px courier new, monospace";
     this._ctx.fillStyle = "#FFFFFF";
@@ -87,8 +79,8 @@ export default class Renderer {
   }
 
   renderGround() {
-    for (var cellY = 0; cellY < 5 /*this._map.mapRows*/; ++cellY) {
-      for (var cellX = 0; cellX < 5 /*this._map.mapCols*/; ++cellX) {
+    for (var cellY = 0; cellY < MAP_SIZE ; ++cellY) {
+      for (var cellX = 0; cellX < MAP_SIZE; ++cellX) {
         var tileValue = this._map.getMapValue(cellY, cellX);
         var currentDraw = this.terrainIndexes[tileValue];
         this.drawTile(
@@ -97,8 +89,8 @@ export default class Renderer {
           currentDraw.y,
           cellY,
           cellX,
-          2 + this._game._currentCameraOffset.x,
-          2 + this._game._currentCameraOffset.y
+          0 + this._game._currentCameraOffset.x,
+          4 + this._game._currentCameraOffset.y
         );
 
         var maskValue = this._map.getMaskValue(cellY, cellX);
@@ -109,8 +101,8 @@ export default class Renderer {
             0,
             cellY,
             cellX,
-            2 + this._game._currentCameraOffset.x,
-            2 + this._game._currentCameraOffset.y
+            0 + this._game._currentCameraOffset.x,
+            4 + this._game._currentCameraOffset.y
           );
         }
       }

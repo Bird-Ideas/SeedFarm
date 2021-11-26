@@ -1,45 +1,48 @@
 import Mouse from "./mouse.js";
 import Renderer from "./renderer.js";
-import Map from "./map.js";
+import Map from "./gamemap.js";
 import DataProvider from "./dataprovider.js";
 
 export const STATE = Object.freeze({"CAMERA":1, "BUILDING": 2, "SHOP":3});
 export const WIDTH = 128; 
 export const HEIGHT = 64; 
+export const MAP_SIZE = 9; 
 export const DATA_PROVIDER = new DataProvider(); 
+
+export var CURRENT_STATE = STATE.CAMERA;
+
 export default class Game {
 
-  CURRENT_STATE = STATE.CAMERA;  
-
-
-  constructor(canvas, context) {
+  constructor(canvas, context, renderer, map, mouse) {
 
     this._canvas = canvas; 
-    this._map = new Map(); 
     this._currentTile = {x: 0, y: 0}; 
     this._currentCameraOffset = {x: 0, y: 0}; 
 
-    this._renderer = new Renderer(context, this, this._map);
     this._mouse = new Mouse(canvas, this); 
-
+    this._map = map; 
+    this._renderer = renderer;
+    this._mouse = mouse;
 
     this._previousElapsed = 0;
    
+  }
 
-    var p = this._renderer.loadImages(); 
-
-    Promise.all(p).then(
-      function (loaded) {
-        this.init();
-        window.requestAnimationFrame(this.tick.bind(this));
-      }.bind(this)
-    );
+  static async asyncInit(canvas, context, renderer, map, mouse) {
+    //const loaded = await renderer.loadImages(); 
+    //console.log(loaded); 
+    const game = new Game(canvas, context, renderer, map, mouse); 
+    game.init(); 
   }
 
   init() {
-    this._renderer.init();
+    
+    this._renderer.init(this);
+    this._mouse.init(this); 
+
     this._mouse.listenForEvents(STATE.CAMERA); 
     this._canvas.addEventListener('click', this.handleClick.bind(this));
+    window.requestAnimationFrame(this.tick.bind(this))
   }
  
   handleClick(e) {
