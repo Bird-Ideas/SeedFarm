@@ -1,9 +1,7 @@
-import Loader from "./loader.js";
 import { WIDTH, HEIGHT } from "./game.js";
 import { DATA_PROVIDER } from "./game.js";
 import { MAP_SIZE } from "./game.js";
-export default class Renderer {
-
+export default class Renderer { 
   constructor(ctx, map, loader) {
     this._ctx = ctx;
     this._map = map;
@@ -20,15 +18,9 @@ export default class Renderer {
     this.editedTile = this._loader.getImage("edited");
 
     var simpleTerrain = { x: 0, y: 0 };
-    var notSimpleTerrain = { x: 5, y: 8 };
-    var thirdTexture = { x: 4, y: 3 };
-    var zeros = { x: 6, y: 10 };
 
     this.terrainIndexes = [
-      simpleTerrain,
-      notSimpleTerrain,
-      thirdTexture,
-      zeros,
+      simpleTerrain
     ];
   }
 
@@ -55,8 +47,8 @@ export default class Renderer {
       0,
       this._game._currentTile.x,
       this._game._currentTile.y,
-      0/* + this._game._currentCameraOffset.x*/,
-      4/* + this._game._currentCameraOffset.y*/
+      0,
+      4
     );
   }
 
@@ -64,8 +56,8 @@ export default class Renderer {
     const textUI = [
       "CurrentTileX: " + this._game._currentTile.x,
       "CurrentTileY: " + this._game._currentTile.y,
-      /*"CurrentMousePosX: " + this._game._currentCameraOffset.x,
-      "CurrentMousePosY: " + this._game._currentCameraOffset.y,
+      /*"CurrentMousePosX: ",
+      "CurrentMousePosY: ",
       */
     ];
     this._ctx.font = "22px courier new, monospace";
@@ -82,15 +74,15 @@ export default class Renderer {
     for (var cellY = 0; cellY < MAP_SIZE ; ++cellY) {
       for (var cellX = 0; cellX < MAP_SIZE; ++cellX) {
         var tileValue = this._map.getMapValue(cellY, cellX);
-        var currentDraw = this.terrainIndexes[tileValue];
+        var currentDraw = this.terrainIndexes[0];
         this.drawTile(
           this.tileAtlas,
           currentDraw.x,
           currentDraw.y,
           cellY,
           cellX,
-          0 + this._game._currentCameraOffset.x,
-          4 + this._game._currentCameraOffset.y
+          0,
+          4
         );
 
         var maskValue = this._map.getMaskValue(cellY, cellX);
@@ -101,8 +93,8 @@ export default class Renderer {
             0,
             cellY,
             cellX,
-            0 + this._game._currentCameraOffset.x,
-            4 + this._game._currentCameraOffset.y
+            0,
+            4
           );
         }
       }
