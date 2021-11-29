@@ -1,7 +1,8 @@
 import { STATE } from "./game.js";
 import { WIDTH, HEIGHT } from "./game.js";
+import { DATA_PROVIDER } from "./game.js";
 
-export class Label { 
+ class Label { 
     constructor(text, x, y) {
         this.text = text; 
         this.x = x; 
@@ -9,7 +10,7 @@ export class Label {
     }
 }
 
-export class Button {
+ class Button {
 
     constructor(text, x, y, width, height, onButtonClicked){
         this.x = x; 
@@ -18,7 +19,6 @@ export class Button {
         this.h = height; 
         this.label = new Label(text, x+width/2, y+height/2)
         this.isHovered = false;   
-        this.isEnabled  = true;
 
         this.onButtonClicked = onButtonClicked; 
     }
@@ -34,20 +34,34 @@ export class Button {
     }
 
 }
-
-export class Panel { 
-    constructor(){
+ class Panel { 
+    constructor(...args){
         this.isEnabled  = false;
+        this.objects = args; 
     }
     
-    object = new Array(0); 
+    setEnabled() {
+        this.objects.forEach(function(item){
+            item.isEnabled = false; 
+        }.bind(this)); 
+    }
+}
 
-
+class Background { 
+    constructor(x, y, width, height, alpha){
+        this.x = x; 
+        this.y = y; 
+        this.w = width; 
+        this.h = height; 
+        this.a = alpha; 
+        this.color = 'white'; 
+    }
 }
 
 export class UI { 
 
-    objects = new Array(0); 
+    objects = {}; 
+
 
     constructor(canvas, ctx, mouse) {
         this._canvas = canvas; 
@@ -57,7 +71,19 @@ export class UI {
 
     init(game) { 
         this._game = game; 
-        this.objects.push(new Button("SHOP", 100, 500, 200, 80, this.shopButtonClicked.bind(this))); 
+
+        const shopBtn = new Button("SHOP", 100, 500, 200, 80, this.shopButtonClicked.bind(this)); 
+        var address = DATA_PROVIDER.GetUserAddress(); 
+        const addressLbl = new Label(address, 1280 - 22 * 26, 30); 
+        this.objects["general"] = new Panel(shopBtn, addressLbl); 
+
+
+        const shopBgrnd = new Background(0, 0, 1280, 640, 0.7); 
+        const backBtn = new Button("Back", 100, 50, 80, 40, this.escapeButtonClicked.bind(this)); 
+        const buildBtn = new Button("BUILD", 140, 320, 200, 80, this.buildBtnClicked.bind(this));
+        this.objects["shop"] = new Panel(shopBgrnd, backBtn, buildBtn); 
+        this.currentPanel = this.objects["general"]; 
+        
         this.listenForEvents();
     }
 
@@ -73,35 +99,67 @@ export class UI {
     }
 
     renderUI() {
-        this.objects.forEach(function(item){
-        var currentButton = item;    
-        currentButton.updateButton(this._mouse); 
-        
-       if(currentButton.isHovered) {
-           this._ctx.fillStyle = 'yellow'; 
-           this._lastElementSelected = currentButton; 
-       } else {
-            this._ctx.fillStyle = 'white';
-            this._lastElementSelected = null; 
-       }
-        this._ctx.fillRect(currentButton.x, currentButton.y, 
-          currentButton.w, currentButton.h); 
-        this._ctx.font = "30px courier new, monospace";
-        this._ctx.fillStyle = 'black';
-        var textSize = this._ctx.measureText(currentButton.label.text);
-        var textX = currentButton.label.x - (textSize.width / 2);
-        var textY = currentButton.label.y + 15/2;
-    
-        this._ctx.fillText(currentButton.label.text, textX, textY);
-        }.bind(this));
+        this.currentPanel.objects.forEach(function(item){
+            if(item instanceof Background) {
+                this.drawBackground(item); 
+            }
+            else if(item instanceof Label){
+                this.drawText(item); 
+            }
+            else if(item instanceof Button){
+                this.drawButton(item); 
+            }
+        }.bind(this)); 
     }
 
-    shopButtonClicked() {
-        if(this._game.CURRENT_STATE == STATE.CAMERA) {
-            this._game.CURRENT_STATE = STATE.BUILDING; 
+    drawBackground(background) {
+        this._ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; 
+        this._ctx.fillRect(background.x, background.y, 
+            background.w, background.h); 
+    }
+
+    drawText(text) {
+        this._ctx.font = "22px courier new, monospace"; 
+        this._ctx.fillStyle = 'black'; 
+        this._ctx.fillText(text.text, text.x, text.y); 
+    }
+
+    drawButton(button) { 
+        button.updateButton(this._mouse); 
+        if(button.isHovered) {
+            this._ctx.fillStyle = 'yellow'; 
+            this._lastElementSelected = button; 
         } else {
-            this._game.CURRENT_STATE = STATE.CAMERA;
+             this._ctx.fillStyle = 'white';
+             if(this._ctx._lastElementSelected == this) {
+                 this._ctx._lastElementSelected = null; 
+             }
         }
-        console.log(this._game.CURRENT_STATE); 
+         this._ctx.fillRect(button.x, button.y, 
+           button.w, button.h); 
+         this._ctx.font = "30px courier new, monospace";
+         this._ctx.fillStyle = 'black';
+         var textSize = this._ctx.measureText(button.label.text);
+         var textX = button.label.x - (textSize.width / 2);
+         var textY = button.label.y + 15/2;
+     
+         this._ctx.fillText(button.label.text, textX, textY);
+    }
+
+   
+
+    shopButtonClicked() {
+        this._game.CURRENT_STATE = STATE.SHOP; 
+        this.currentPanel = this.objects["shop"]; 
+    }
+
+    escapeButtonClicked() {
+        this._game.CURRENT_STATE = STATE.CAMERA; 
+        this.currentPanel = this.objects["general"];
+    }
+
+    buildBtnClicked() { 
+        this._game.CURRENT_STATE = STATE.BUILDING; 
+        this.currentPanel = this.objects["general"];
     }
 }

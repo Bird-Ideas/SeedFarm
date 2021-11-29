@@ -29,7 +29,6 @@ export default class Renderer {
     this.renderGrid();
     this.renderGround();
     this.drawCurrentTile();
-    this.drawText();
   }
 
   renderGrid() {
@@ -52,23 +51,7 @@ export default class Renderer {
     );
   }
 
-  drawText() {
-    const textUI = [
-      "CurrentTileX: " + this._game._currentTile.x,
-      "CurrentTileY: " + this._game._currentTile.y,
-      /*"CurrentMousePosX: ",
-      "CurrentMousePosY: ",
-      */
-    ];
-    this._ctx.font = "22px courier new, monospace";
-    this._ctx.fillStyle = "#FFFFFF";
-    for (let i = 0; i < textUI.length; i++) {
-      this._ctx.fillText(textUI[i], 10, 30 + i * 30);
-    }
-
-    var address = DATA_PROVIDER.GetUserAddress(); 
-    this._ctx.fillText(address, 1280 - 22 * 26, 30); 
-  }
+  
 
   renderGround() {
     for (var cellY = 0; cellY < MAP_SIZE ; ++cellY) {

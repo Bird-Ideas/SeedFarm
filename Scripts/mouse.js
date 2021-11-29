@@ -38,10 +38,12 @@ export default class Mouse {
     }
 
     handleClick(e) {
-        this._canvas.dispatchEvent(this.onUIClicked);   
-
-        if(this._game.CURRENT_STATE == STATE.CAMERA) {
-        } else if (this._game.CURRENT_STATE == STATE.BUILDING) {
+        console.log(this._game.CURRENT_STATE);
+        if(this._game.CURRENT_STATE == STATE.CAMERA || 
+            this._game.CURRENT_STATE == STATE.SHOP) {
+                this._canvas.dispatchEvent(this.onUIClicked);   
+        }
+        if (this._game.CURRENT_STATE == STATE.BUILDING) {
             this.dispatchGameMapEvent(); 
         }
       }
