@@ -6,14 +6,35 @@ export default class DataProvider {
 
     SetUserAddress(address){
         this._address = address; 
+        this.dispatchDataProviderChanged(); 
     }
 
     GetUserAddress(){
         return this._address; 
     }
 
-    async init(){
-        //this.SetUserAddress("0x550AD7627790F8e963691eAC88b90E3C17276CE8");
+    SetUserStakedAmmount(staked) {
+        this._staked = staked; 
+        this.dispatchDataProviderChanged(); 
+    }
+
+    GetUserStakedAmmount() {
+        return this._staked; 
+    }
+
+    SetUserBuildingCount(buildingCount) { 
+        this._buildingCount = buildingCount; 
+        this.dispatchDataProviderChanged(); 
+    }
+
+    GetUserBuildingCount() {
+        return this._buildingCount;
+    }
+
+    dispatchDataProviderChanged() {
+        var onDataProviderChanged = new CustomEvent('onDataProviderChanged');
+
+        window.dispatchEvent(onDataProviderChanged); 
     }
 }
 

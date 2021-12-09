@@ -1,12 +1,13 @@
 import { STATE } from "./game.js";
-import { WIDTH, HEIGHT } from "./game.js";
+import { CWIDTH, CHEIGHT } from "./game.js";
 import { DATA_PROVIDER } from "./game.js";
 
  class Label { 
-    constructor(text, x, y) {
+    constructor(text, x, y, color = 'white') {
         this.text = text; 
         this.x = x; 
         this.y = y; 
+        this.color = color; 
     }
 }
 
@@ -58,30 +59,67 @@ class Background {
     }
 }
 
+class UIImage {
+    constructor(source, x, y) {
+        this.source = source;
+        this.x = x;
+        this.y = y;  
+    }
+}
+
 export class UI { 
 
     objects = {}; 
 
 
-    constructor(canvas, ctx, mouse) {
+    constructor(canvas, ctx, loader, mouse) {
         this._canvas = canvas; 
         this._ctx = ctx; 
+        this._loader = loader; 
         this._mouse = mouse; 
     }
 
     init(game) { 
         this._game = game; 
 
-        const shopBtn = new Button("SHOP", 100, 500, 200, 80, this.shopButtonClicked.bind(this)); 
+        const shopBtnW = 200; 
+        const shopBtnH = 80; 
+        const shopBtnPosX =  CWIDTH - shopBtnW - CWIDTH / 100 * 5; 
+        const shopBtnPosY = CHEIGHT - shopBtnH - CHEIGHT/100 * 5; 
+        const shopBtn = new Button("SHOP", shopBtnPosX, shopBtnPosY, 
+            shopBtnW, shopBtnH, this.shopButtonClicked.bind(this));
+
         var address = DATA_PROVIDER.GetUserAddress(); 
-        const addressLbl = new Label(address, 1280 - 22 * 26, 30); 
+        const addressLbl = new Label(address, CWIDTH/2, 30); 
         this.objects["general"] = new Panel(shopBtn, addressLbl); 
 
 
-        const shopBgrnd = new Background(0, 0, 1280, 640, 0.7); 
-        const backBtn = new Button("Back", 100, 50, 80, 40, this.escapeButtonClicked.bind(this)); 
-        const buildBtn = new Button("BUILD", 140, 320, 200, 80, this.buildBtnClicked.bind(this));
-        this.objects["shop"] = new Panel(shopBgrnd, backBtn, buildBtn); 
+        const shopBgrnd = new Background(0, 0, CWIDTH, CHEIGHT, 0.7); 
+
+        const backBtnW = 100; 
+        const backBtnH = 40; 
+        const backBtnPosX = CWIDTH - backBtnW - CWIDTH / 100 * 5; 
+        const backBtnPosY = CHEIGHT / 100 * 3;  
+        const backBtn = new Button("Back", backBtnPosX, backBtnPosY, 
+            backBtnW, backBtnH, this.escapeButtonClicked.bind(this)); 
+
+        const buildBtnW = 200; 
+        const buildBtnH = 80;
+        const buildHousePosX = CWIDTH / 100 * 10;
+        const buildHousePosY = buildBtnH + CHEIGHT / 2; 
+        const buildBtn = new Button("BUILD", buildHousePosX, buildHousePosY, 
+            buildBtnW, buildBtnH, this.buildBtnClicked.bind(this, 1));
+
+        const houseImgSrc = this._loader.getImage("edited"); 
+        const houseImgPosX = buildHousePosX - 20;
+        const houseImgPosY = buildHousePosY - 200; 
+        const houseImg = new UIImage(houseImgSrc, houseImgPosX, houseImgPosY); 
+
+        const housePriceLblX = buildHousePosX; 
+        const housePriceLblY = buildHousePosY - 15; 
+        const housePriceLbl = new Label("Price: 0.1 ETH", housePriceLblX, housePriceLblY, 'black'); 
+
+        this.objects["shop"] = new Panel(shopBgrnd, backBtn, buildBtn, houseImg, housePriceLbl); 
         this.currentPanel = this.objects["general"]; 
         
         this.listenForEvents();
@@ -89,6 +127,11 @@ export class UI {
 
     listenForEvents() {
         this._canvas.addEventListener('onUIClicked', this.onUIClicked.bind(this)); 
+        window.addEventListener('dispatchDataProviderChanged', this.getDataFromProvider.bind(this)); 
+    }
+
+    getDataFromProvider() {
+        DATA_PROVIDER.GetUserAddress(); 
     }
 
     onUIClicked() {
@@ -109,6 +152,9 @@ export class UI {
             else if(item instanceof Button){
                 this.drawButton(item); 
             }
+            else if(item instanceof UIImage){
+                this.drawUIImage(item); 
+            }
         }.bind(this)); 
     }
 
@@ -120,7 +166,7 @@ export class UI {
 
     drawText(text) {
         this._ctx.font = "22px courier new, monospace"; 
-        this._ctx.fillStyle = 'black'; 
+        this._ctx.fillStyle = text.color; 
         this._ctx.fillText(text.text, text.x, text.y); 
     }
 
@@ -146,18 +192,65 @@ export class UI {
          this._ctx.fillText(button.label.text, textX, textY);
     }
 
+    drawUIImage(image) {
+        this._ctx.drawImage(
+            image.source, 
+            0,
+            0, 
+            128, 
+            64, 
+            image.x, 
+            image.y, 
+            128 * 2, 
+            64 * 2
+        );
+    }
+
     shopButtonClicked() {
         this._game.CURRENT_STATE = STATE.SHOP; 
         this.currentPanel = this.objects["shop"]; 
+        this.dispatchShopStateEvent(); 
     }
 
     escapeButtonClicked() {
-        this._game.CURRENT_STATE = STATE.CAMERA; 
+        this._game.CURRENT_STATE = STATE.DEFAULT; 
         this.currentPanel = this.objects["general"];
     }
 
-    buildBtnClicked() { 
+    buildBtnClicked(value) { 
+        console.log(value)
         this._game.CURRENT_STATE = STATE.BUILDING; 
         this.currentPanel = this.objects["general"];
+        this.dispatchBuildingStateEvent(value); 
     }
+
+    dispatchDefaultStateEvent() {
+        var onShopState = new CustomEvent('onDefaultState', {
+            detail: {
+                
+             },
+        });
+
+        window.dispatchEvent(onShopState); 
+    }
+
+    dispatchShopStateEvent() {
+        var onShopState = new CustomEvent('onShopState', {
+            detail: {
+                
+             },
+        });
+
+        window.dispatchEvent(onShopState); 
+      }
+
+    dispatchBuildingStateEvent(value) {
+        var onBuildingState = new CustomEvent('onBuildingState', {
+            detail: {
+                'building' : value
+             },
+        });
+        console.log(onBuildingState); 
+        window.dispatchEvent(onBuildingState); 
+      }
 }

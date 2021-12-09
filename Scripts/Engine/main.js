@@ -14,7 +14,7 @@ window.onload = async function () {
   await loader.init(); 
   const renderer = new Renderer(context, map, loader); 
   const mouse = new Mouse(canvas); 
-  const ui = new UI(canvas, context, mouse); 
+  const ui = new UI(canvas, context, loader, mouse); 
 
   const game = new Game(canvas, context, renderer, ui, map, mouse); 
   game.init(); 

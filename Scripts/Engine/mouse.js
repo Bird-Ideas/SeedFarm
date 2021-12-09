@@ -2,9 +2,7 @@ import { STATE } from "./game.js";
 import { WIDTH, HEIGHT } from "./game.js";
 export default class Mouse {
     
-    onUIClicked = new CustomEvent('onUIClicked', {
-        bubbles: true, 
-    });
+   
     
     constructor(canvas){
         this._canvas = canvas; 
@@ -38,17 +36,25 @@ export default class Mouse {
     }
 
     handleClick(e) {
-        if(this._game.CURRENT_STATE == STATE.CAMERA || 
+        if(this._game.CURRENT_STATE == STATE.DEFAULT || 
             this._game.CURRENT_STATE == STATE.SHOP) {
-                this._canvas.dispatchEvent(this.onUIClicked);   
+                this.dispatchUIClickedEvent(); 
         }
-        if (this._game.CURRENT_STATE == STATE.BUILDING) {
-            this._canvas.dispatchEvent(this.onUIClicked);
-            this.dispatchGameMapEvent(); 
+        else if (this._game.CURRENT_STATE == STATE.BUILDING) {
+            this.dispatchUIClickedEvent(); 
+            this.dispatchMapChangedEvent(); 
         }
       }
 
-      dispatchGameMapEvent() {
+      dispatchUIClickedEvent() {
+        var  onUIClicked = new CustomEvent('onUIClicked', {
+            bubbles: true, 
+        });
+
+        this._canvas.dispatchEvent(onUIClicked); 
+      }
+
+      dispatchMapChangedEvent() {
         var onMapChanged = new CustomEvent('onMapChanged', {
             bubbles: true, 
             detail: {

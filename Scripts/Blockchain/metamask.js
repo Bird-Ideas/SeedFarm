@@ -9,10 +9,7 @@ if(window.ethereum.selectedAddress != null) {
     getMapFromAccount(); 
 }
 
-
-
 window.ethereum.on('accountsChanged', function(accounts){
-    console.log(accounts[0]); 
     DATA_PROVIDER.SetUserAddress(accounts[0]); 
     getMapFromAccount(); 
 });

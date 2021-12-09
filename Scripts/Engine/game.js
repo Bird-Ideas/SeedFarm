@@ -1,14 +1,16 @@
 import DataProvider from "./dataprovider.js";
 
-export const STATE = Object.freeze({"CAMERA":1, "BUILDING": 2, "SHOP":3});
+export const STATE = Object.freeze({"DEFAULT":1, "BUILDING": 2, "SHOP":3});
 export const WIDTH = 128; 
 export const HEIGHT = 64; 
 export const MAP_SIZE = 9; 
+export const CWIDTH = WIDTH * MAP_SIZE; 
+export const CHEIGHT = HEIGHT * MAP_SIZE; 
 export const DATA_PROVIDER = new DataProvider(); 
 
 export default class Game {
 
-  CURRENT_STATE = STATE.CAMERA; 
+  CURRENT_STATE = STATE.BUILDING; 
 
   constructor(canvas, context, renderer, ui, map, mouse) {
 

@@ -1,7 +1,10 @@
 import { WIDTH, HEIGHT } from "./game.js";
-import { DATA_PROVIDER } from "./game.js";
+import { CWIDTH, CHEIGHT } from "./game.js";
 import { MAP_SIZE } from "./game.js";
 export default class Renderer { 
+
+  isCurrentTileEnabled = true; 
+
   constructor(ctx, map, loader) {
     this._ctx = ctx;
     this._map = map;
@@ -22,10 +25,22 @@ export default class Renderer {
     this.terrainIndexes = [
       simpleTerrain
     ];
+
+    this.listenForEvents(); 
+  }
+
+  listenForEvents() {
+    window.addEventListener('onShopState', function(e) {
+        this.isCurrentTileEnabled = false;
+    }.bind(this)); 
+
+    window.addEventListener('onBuildingState', function(e) {
+        this.isCurrentTileEnabled = true; 
+    }.bind(this));
   }
 
   render() {
-    this._ctx.clearRect(0, 0, 1280, 640);
+    this._ctx.clearRect(0, 0, CWIDTH, CHEIGHT);
     this.renderGrid();
     this.renderGround();
     this.drawCurrentTile();
@@ -40,6 +55,7 @@ export default class Renderer {
   }
 
   drawCurrentTile() {
+    if(this.isCurrentTileEnabled == false) return; 
     this.drawTile(
       this.currentTile,
       0,
@@ -51,12 +67,9 @@ export default class Renderer {
     );
   }
 
-  
-
   renderGround() {
     for (var cellY = 0; cellY < MAP_SIZE ; ++cellY) {
       for (var cellX = 0; cellX < MAP_SIZE; ++cellX) {
-        var tileValue = this._map.getMapValue(cellY, cellX);
         var currentDraw = this.terrainIndexes[0];
         this.drawTile(
           this.tileAtlas,

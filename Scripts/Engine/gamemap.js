@@ -1,20 +1,11 @@
 export default class GameMap {
+
+  currentBuilding = 1; 
+
   constructor(canvas) {
 
     this._canvas = canvas; 
     
-    this._map = [
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ];
-
     this._mask = [
       [0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -33,10 +24,8 @@ export default class GameMap {
   listenForEvents () { 
     window.addEventListener('onMapLoaded', this.mapLoaded.bind(this)); 
     this._canvas.addEventListener('onMapChanged', this.setMaskValue.bind(this)); 
-  }
 
-  getMapValue(row, col) {
-    return this._map[row][col];
+    window.addEventListener('onBuildingState', this.setCurrentBuilding.bind(this))
   }
 
   mapLoaded(e) {
@@ -49,19 +38,25 @@ export default class GameMap {
     }
   }
 
-  getMaskValue(row, col) {
-    return this._mask[row][col]; 
-  }
-
   setMaskValue(e) { 
     const row = e.detail.tileX; 
     const col = e.detail.tileY;
     if(row < 0 || row > 9 || col < 0 || col > 9) return; 
     if(this._mask[row][col] == 0) {
-      this._mask[row][col] = 1; 
+      this._mask[row][col] = this.currentBuilding;  
     }
-
   }
+
+  getMaskValue(row, col) {
+    return this._mask[row][col]; 
+  }
+
+ setCurrentBuilding(e) { 
+   const building = e.detail.building; 
+   if(this.currentBuilding != building){
+     this.currentBuilding = building; 
+   }
+ }
 
 
 }
