@@ -146,8 +146,6 @@ export class UI {
          this._ctx.fillText(button.label.text, textX, textY);
     }
 
-   
-
     shopButtonClicked() {
         this._game.CURRENT_STATE = STATE.SHOP; 
         this.currentPanel = this.objects["shop"]; 

@@ -4,6 +4,7 @@ pragma solidity ^0.8.7;
 
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 import "./SToken.sol"; 
 
 
@@ -13,6 +14,8 @@ contract SFarm {
     mapping(address => uint256) public stokeBalance; 
     mapping(address => bool) public isStaking; 
     mapping(address => uint256) public startTime; 
+
+    mapping(address => uint256[9][9]) public maps;
     
     
     event Stake(address indexed from, uint256 amount);
@@ -88,7 +91,7 @@ contract SFarm {
         }
         
         startTime[msg.sender] = block.timestamp;
-        stoke.mint(msg.sender, toTransfer);
+        //stoke.mint(msg.sender, toTransfer);
         
         emit YieldWithdraw(msg.sender, toTransfer);
         return true; 

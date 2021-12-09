@@ -38,18 +38,17 @@ export default class Mouse {
     }
 
     handleClick(e) {
-        console.log(this._game.CURRENT_STATE);
         if(this._game.CURRENT_STATE == STATE.CAMERA || 
             this._game.CURRENT_STATE == STATE.SHOP) {
                 this._canvas.dispatchEvent(this.onUIClicked);   
         }
         if (this._game.CURRENT_STATE == STATE.BUILDING) {
+            this._canvas.dispatchEvent(this.onUIClicked);
             this.dispatchGameMapEvent(); 
         }
       }
 
       dispatchGameMapEvent() {
-        
         var onMapChanged = new CustomEvent('onMapChanged', {
             bubbles: true, 
             detail: {

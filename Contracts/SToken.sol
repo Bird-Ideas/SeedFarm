@@ -9,11 +9,4 @@ contract SToken is ERC20, Ownable {
     
     constructor() ERC20("SneedFarmToken", "STOK") {}
     
-    function mint(address to, uint256 amount) public onlyOwner {
-        _mint(to, amount); 
-    }
-    
-    function _transferOwnership(address newOwner) public onlyOwner { 
-        transferOwnership(newOwner); 
-    }
 }
