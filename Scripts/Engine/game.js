@@ -1,6 +1,6 @@
 import DataProvider from "./dataprovider.js";
 
-export const STATE = Object.freeze({"DEFAULT":1, "BUILDING": 2, "SHOP":3});
+export const STATE = Object.freeze({"LOCKED": 0, "DEFAULT":1, "BUILDING": 2, "SHOP":3});
 export const WIDTH = 128; 
 export const HEIGHT = 64; 
 export const MAP_SIZE = 9; 
@@ -8,11 +8,11 @@ export const CWIDTH = WIDTH * MAP_SIZE;
 export const CHEIGHT = HEIGHT * MAP_SIZE; 
 export const DATA_PROVIDER = new DataProvider(); 
 
+window.CURRENT_STATE = STATE.LOCKED; 
+
 export default class Game {
 
-  CURRENT_STATE = STATE.BUILDING; 
-
-  constructor(canvas, context, renderer, ui, map, mouse) {
+  constructor(canvas, context, renderer, ui, map, mouse, economics) {
 
     this._canvas = canvas; 
     this._currentTile = {x: 0, y: 0}; 
@@ -43,9 +43,6 @@ export default class Game {
     this._currentCameraOffset.y += 0.1;
   }
 
-  onMapChanged(e) {
-    
-  }
 
   tick(elapsed) {
 

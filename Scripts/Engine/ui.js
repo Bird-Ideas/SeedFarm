@@ -82,6 +82,10 @@ export class UI {
     init(game) { 
         this._game = game; 
 
+        const lockedBgrnd = new Background(0, 0, CWIDTH, CHEIGHT, 1);
+        const lockedLbl = new Label("Connect to Metamask.", 440, 228, 'black');
+        this.objects["locked"] = new Panel(lockedBgrnd, lockedLbl);
+
         const shopBtnW = 200; 
         const shopBtnH = 80; 
         const shopBtnPosX =  CWIDTH - shopBtnW - CWIDTH / 100 * 5; 
@@ -89,9 +93,14 @@ export class UI {
         const shopBtn = new Button("SHOP", shopBtnPosX, shopBtnPosY, 
             shopBtnW, shopBtnH, this.shopButtonClicked.bind(this));
 
-        var address = DATA_PROVIDER.GetUserAddress(); 
+        var address = window.userAddress; 
         const addressLbl = new Label(address, CWIDTH/2, 30); 
-        this.objects["general"] = new Panel(shopBtn, addressLbl); 
+
+        var DBG_USER_BLD = DATA_PROVIDER.GetBuildingCount(); 
+        const DBG_BLD_LBL = new Label(DBG_USER_BLD, 30, 30); 
+        var DBG_USER_STK = DATA_PROVIDER.GetStaked(); 
+        const DBG_STK_LBL = new Label(DBG_USER_STK, 30, 60); 
+        this.objects["general"] = new Panel(shopBtn, addressLbl, DBG_BLD_LBL, DBG_STK_LBL); 
 
 
         const shopBgrnd = new Background(0, 0, CWIDTH, CHEIGHT, 0.7); 
@@ -120,18 +129,27 @@ export class UI {
         const housePriceLbl = new Label("Price: 0.1 ETH", housePriceLblX, housePriceLblY, 'black'); 
 
         this.objects["shop"] = new Panel(shopBgrnd, backBtn, buildBtn, houseImg, housePriceLbl); 
-        this.currentPanel = this.objects["general"]; 
+        this.currentPanel = this.objects["locked"]; 
         
         this.listenForEvents();
     }
 
     listenForEvents() {
         this._canvas.addEventListener('onUIClicked', this.onUIClicked.bind(this)); 
+        window.addEventListener('onUnlocked', this.onUnlocked.bind(this)); 
+
         window.addEventListener('dispatchDataProviderChanged', this.getDataFromProvider.bind(this)); 
     }
 
     getDataFromProvider() {
-        DATA_PROVIDER.GetUserAddress(); 
+        this.address = DATA_PROVIDER.GetAddress(); 
+        this.DBG_USER_BLD = DATA_PROVIDER.GetBuildingCount(); 
+        this.DBG_USER_STK = DATA_PROVIDER.GetStaked(); 
+    }
+
+    onUnlocked() {
+        console.log(this.currentPanel); 
+        this.currentPanel = this.objects["general"]; 
     }
 
     onUIClicked() {
@@ -159,7 +177,8 @@ export class UI {
     }
 
     drawBackground(background) {
-        this._ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; 
+        this._ctx.fillStyle = `rgba(255, 255, 255, ${background.a}`
+        //._ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; 
         this._ctx.fillRect(background.x, background.y, 
             background.w, background.h); 
     }
@@ -234,6 +253,7 @@ export class UI {
         window.dispatchEvent(onShopState); 
     }
 
+
     dispatchShopStateEvent() {
         var onShopState = new CustomEvent('onShopState', {
             detail: {
@@ -250,7 +270,6 @@ export class UI {
                 'building' : value
              },
         });
-        console.log(onBuildingState); 
         window.dispatchEvent(onBuildingState); 
       }
 }

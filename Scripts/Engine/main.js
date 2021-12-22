@@ -4,7 +4,26 @@ import Loader from './loader.js';
 import Renderer from './renderer.js'; 
 import Mouse from './mouse.js'; 
 import { UI } from './ui.js'; 
+import Economics from './economics.js'; 
 
+
+window.addEventListener('loadGameEngine', async () => {
+  const canvas = document.getElementById("playground");
+  const context = canvas.getContext('2d');
+
+  const map = new GameMap(canvas); 
+  const loader = new Loader(); 
+  await loader.init(); 
+  const renderer = new Renderer(context, map, loader); 
+  const mouse = new Mouse(canvas); 
+  const ui = new UI(canvas, context, loader, mouse); 
+  const economics = new Economics(map); 
+
+  const game = new Game(canvas, context, renderer, ui, map, mouse, economics); 
+  game.init(); 
+}); 
+
+/*
 window.onload = async function () {
   const canvas = document.getElementById("playground");
   const context = canvas.getContext('2d');
@@ -15,7 +34,9 @@ window.onload = async function () {
   const renderer = new Renderer(context, map, loader); 
   const mouse = new Mouse(canvas); 
   const ui = new UI(canvas, context, loader, mouse); 
+  const economics = new Economics(map); 
 
-  const game = new Game(canvas, context, renderer, ui, map, mouse); 
+  const game = new Game(canvas, context, renderer, ui, map, mouse, economics); 
   game.init(); 
 };
+*/ 

@@ -2,8 +2,6 @@ import { STATE } from "./game.js";
 import { WIDTH, HEIGHT } from "./game.js";
 export default class Mouse {
     
-   
-    
     constructor(canvas){
         this._canvas = canvas; 
 
@@ -36,11 +34,14 @@ export default class Mouse {
     }
 
     handleClick(e) {
-        if(this._game.CURRENT_STATE == STATE.DEFAULT || 
+        if(window.CURRENT_STATE == STATE.LOCKED){
+            return; 
+        }
+        else if(window.CURRENT_STATE == STATE.DEFAULT || 
             this._game.CURRENT_STATE == STATE.SHOP) {
                 this.dispatchUIClickedEvent(); 
         }
-        else if (this._game.CURRENT_STATE == STATE.BUILDING) {
+        else if (window.CURRENT_STATE == STATE.BUILDING) {
             this.dispatchUIClickedEvent(); 
             this.dispatchMapChangedEvent(); 
         }
