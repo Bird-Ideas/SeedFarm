@@ -4,30 +4,21 @@ export default class DataProvider {
         
     }
 
-    SetUserAddress(address){
-        this._address = address; 
-        this.dispatchDataProviderChanged(); 
-    }
-
-    GetUserAddress(){
-        return this._address; 
-    }
-
-    SetUserStakedAmmount(staked) {
+    SetStaked(staked) {
         this._staked = staked; 
         this.dispatchDataProviderChanged(); 
     }
 
-    GetUserStakedAmmount() {
+    GetStaked() {
         return this._staked; 
     }
 
-    SetUserBuildingCount(buildingCount) { 
+    SetBuildingCount(buildingCount) { 
         this._buildingCount = buildingCount; 
         this.dispatchDataProviderChanged(); 
     }
 
-    GetUserBuildingCount() {
+    GetBuildingCount() {
         return this._buildingCount;
     }
 

@@ -1,35 +1,76 @@
 import { DATA_PROVIDER } from "../Engine/game.js";
 
-import web3 from './web3.js'; 
-import mapArray from './mapInstance.js'; 
+import { web3, instance } from "./web3.js" 
 
+window.userAddress = null; 
 
-if(window.ethereum.selectedAddress != null) {
-    DATA_PROVIDER.SetUserAddress(window.ethereum.selectedAddress);  
-    getMapFromAccount(); 
+window.onload = async () => {
+    if(window.ethereum.selectedAddress != null) {
+        window.userAddress = window.ethereum.selectedAddress; 
+        dispatchLoadGameEngine(); 
+        dispatchUnlockedEvent(); 
+    
+        fetchUserData(); 
+    }
 }
-
-window.ethereum.on('accountsChanged', function(accounts){
-    DATA_PROVIDER.SetUserAddress(accounts[0]); 
-    getMapFromAccount(); 
-});
 
 const ethereumButton = document.getElementById('eth-button');
 ethereumButton.addEventListener('click', () => {
     connectToMetamask(); 
+    ethereumButton.textContent = window.ethereum.selectedAddress;
 }); 
 
 async function connectToMetamask() { 
     const accounts = await ethereum.request({ method: 'eth_requestAccounts' }); 
-    DATA_PROVIDER.SetUserAddress(accounts[0]);
+    window.userAddress = accounts[0]; 
 }
 
-async function getMapFromAccount() {
-    const result = await mapArray.methods.getMap()
+async function fetchUserData() {
+    
+    const result = await instance.methods.getMap()
     .call({
-        from: ethereum.selectedAddress 
+        from:  window.userAddress
     }); 
+
+    const staked = await instance.methods.getStaked()
+    .call({
+        from: window.userAddress
+    }); 
+    /*
+    const houses = await instance.methods.getHouses()
+    .call({
+        from: window.userAddress
+    }); 
+    */
+
+    console.log(result);
+    //console.log(staked, houses); 
+    //DATA_PROVIDER.SetStaked(staked); 
+    //DATA_PROVIDER.SetBuildingCount(houses); 
     dispatchMapLoadedEvent(result); 
+}
+
+
+function dispatchUnlockedEvent() {
+    var onUnlocked = new CustomEvent('onUnlocked', {
+        bubbles: false, 
+        detail: {
+
+         },
+    });
+
+    window.dispatchEvent(onUnlocked); 
+}
+
+function dispatchLoadGameEngine() {
+    var loadGameEngine = new CustomEvent('loadGameEngine', {
+        bubbles: false, 
+        detail: {
+
+         },
+    });
+
+    window.dispatchEvent(loadGameEngine); 
 }
 
 function dispatchMapLoadedEvent(result) {

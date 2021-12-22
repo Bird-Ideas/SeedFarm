@@ -1,5 +1,5 @@
-const MapArray = artifacts.require("MapArray");
+const builder = artifacts.require("Builder");
 
 module.exports = async function (deployer) {
-  await deployer.deploy(MapArray);
+  await deployer.deploy(builder);
 };
