@@ -4,13 +4,15 @@ import { web3, instance } from "./web3.js"
 
 window.userAddress = null; 
 
+window.addEventListener('fetch_data', fetchUserData); 
+
 window.onload = async () => {
+    dispatchLoadGameEngine(); 
     if(window.ethereum.selectedAddress != null) {
         window.userAddress = window.ethereum.selectedAddress; 
-        dispatchLoadGameEngine(); 
+        await fetchUserData(); 
+
         dispatchUnlockedEvent(); 
-    
-        fetchUserData(); 
     }
 }
 
@@ -26,28 +28,25 @@ async function connectToMetamask() {
 }
 
 async function fetchUserData() {
-    
+    console.log('fetching user data');
     const result = await instance.methods.getMap()
     .call({
         from:  window.userAddress
     }); 
+    console.log(result); 
 
     const staked = await instance.methods.getStaked()
     .call({
         from: window.userAddress
     }); 
-    /*
     const houses = await instance.methods.getHouses()
     .call({
         from: window.userAddress
-    }); 
-    */
+    });
 
-    console.log(result);
-    //console.log(staked, houses); 
-    //DATA_PROVIDER.SetStaked(staked); 
-    //DATA_PROVIDER.SetBuildingCount(houses); 
-    dispatchMapLoadedEvent(result); 
+    DATA_PROVIDER.SetStaked(web3.utils.fromWei(staked)); 
+    DATA_PROVIDER.SetBuildingCount(houses); 
+    dispatchUpdateMapEvent(result); 
 }
 
 
@@ -73,13 +72,13 @@ function dispatchLoadGameEngine() {
     window.dispatchEvent(loadGameEngine); 
 }
 
-function dispatchMapLoadedEvent(result) {
-    var onMapLoaded = new CustomEvent('onMapLoaded', {
+function dispatchUpdateMapEvent(result) {
+    var onUpdateMap = new CustomEvent('onUpdateMap', {
         bubbles: false, 
         detail: {
             'array': result 
          },
     });
 
-    window.dispatchEvent(onMapLoaded); 
+    window.dispatchEvent(onUpdateMap); 
 }

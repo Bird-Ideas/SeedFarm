@@ -96,11 +96,9 @@ export class UI {
         var address = window.userAddress; 
         const addressLbl = new Label(address, CWIDTH/2, 30); 
 
-        var DBG_USER_BLD = DATA_PROVIDER.GetBuildingCount(); 
-        const DBG_BLD_LBL = new Label(DBG_USER_BLD, 30, 30); 
-        var DBG_USER_STK = DATA_PROVIDER.GetStaked(); 
-        const DBG_STK_LBL = new Label(DBG_USER_STK, 30, 60); 
-        this.objects["general"] = new Panel(shopBtn, addressLbl, DBG_BLD_LBL, DBG_STK_LBL); 
+        this.DBG_BLD_LBL = new Label("Buildings: ", 30, 30); 
+        this.DBG_STK_LBL = new Label("Staked: ", 30, 60); 
+        this.objects["general"] = new Panel(shopBtn, addressLbl, this.DBG_BLD_LBL, this.DBG_STK_LBL); 
 
 
         const shopBgrnd = new Background(0, 0, CWIDTH, CHEIGHT, 0.7); 
@@ -138,18 +136,18 @@ export class UI {
         this._canvas.addEventListener('onUIClicked', this.onUIClicked.bind(this)); 
         window.addEventListener('onUnlocked', this.onUnlocked.bind(this)); 
 
-        window.addEventListener('dispatchDataProviderChanged', this.getDataFromProvider.bind(this)); 
+        window.addEventListener('onDataProviderChanged', this.getDataFromProvider.bind(this)); 
     }
 
     getDataFromProvider() {
-        this.address = DATA_PROVIDER.GetAddress(); 
-        this.DBG_USER_BLD = DATA_PROVIDER.GetBuildingCount(); 
-        this.DBG_USER_STK = DATA_PROVIDER.GetStaked(); 
+        this.address = window.userAddress; 
+        this.DBG_BLD_LBL.text = DATA_PROVIDER.GetBuildingCount(); 
+        this.DBG_STK_LBL.text = DATA_PROVIDER.GetStaked(); 
     }
 
     onUnlocked() {
-        console.log(this.currentPanel); 
         this.currentPanel = this.objects["general"]; 
+        window.CURRENT_STATE = STATE.DEFAULT; 
     }
 
     onUIClicked() {
@@ -226,19 +224,18 @@ export class UI {
     }
 
     shopButtonClicked() {
-        this._game.CURRENT_STATE = STATE.SHOP; 
+        window.CURRENT_STATE = STATE.SHOP; 
         this.currentPanel = this.objects["shop"]; 
         this.dispatchShopStateEvent(); 
     }
 
     escapeButtonClicked() {
-        this._game.CURRENT_STATE = STATE.DEFAULT; 
+        window.CURRENT_STATE = STATE.DEFAULT; 
         this.currentPanel = this.objects["general"];
     }
 
     buildBtnClicked(value) { 
-        console.log(value)
-        this._game.CURRENT_STATE = STATE.BUILDING; 
+        window.CURRENT_STATE = STATE.BUILDING; 
         this.currentPanel = this.objects["general"];
         this.dispatchBuildingStateEvent(value); 
     }

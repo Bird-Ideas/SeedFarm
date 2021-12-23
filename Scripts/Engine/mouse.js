@@ -38,7 +38,7 @@ export default class Mouse {
             return; 
         }
         else if(window.CURRENT_STATE == STATE.DEFAULT || 
-            this._game.CURRENT_STATE == STATE.SHOP) {
+            window.CURRENT_STATE == STATE.SHOP) {
                 this.dispatchUIClickedEvent(); 
         }
         else if (window.CURRENT_STATE == STATE.BUILDING) {

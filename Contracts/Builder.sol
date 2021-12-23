@@ -19,6 +19,9 @@ contract Builder {
     function setPosition(uint8 _pos, uint8 _bId) external 
         priced(_bId) payable returns (bool) {
         
+        require(maps[msg.sender][_pos] != _bId, 
+            "Building already placed."); 
+
         maps[msg.sender][_pos] = _bId; 
         staked[msg.sender] += prices[_bId];
         housesCount[msg.sender]++; 
