@@ -12,7 +12,7 @@ window.CURRENT_STATE = STATE.LOCKED;
 
 export default class Game {
 
-  constructor(canvas, context, renderer, ui, map, mouse, economics) {
+  constructor(canvas, renderer, ui, map, mouse) {
 
     this._canvas = canvas; 
     this._currentTile = {x: 0, y: 0}; 
@@ -32,24 +32,14 @@ export default class Game {
     this._mouse.init(this); 
     this._ui.init(this); 
     
-
     window.requestAnimationFrame(this.tick.bind(this))
   }
  
-
-
-  moveCamera(e) {
-    this._currentCameraOffset.x += 0.1; 
-    this._currentCameraOffset.y += 0.1;
-  }
-
-
   tick(elapsed) {
 
     this._currentTile.x = this._mouse.tileX; 
     this._currentTile.y = this._mouse.tileY;
-    this._currentCameraOffset.x = this._mouse.mouseDeltaX; 
-    this._currentCameraOffset.y = this._mouse.mouseDeltaY; 
+
     this._renderer.render(); 
     this._ui.renderUI(); 
     

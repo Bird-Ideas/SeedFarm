@@ -7,19 +7,21 @@ window.userAddress = null;
 window.addEventListener('fetch_data', fetchUserData); 
 
 window.onload = async () => {
+    await ethereum.request({ method: 'wallet_switchEthereumChain', params:[{chainId: '0x4'}] });
     dispatchLoadGameEngine(); 
-    if(window.ethereum.selectedAddress != null) {
-        window.userAddress = window.ethereum.selectedAddress; 
-        await fetchUserData(); 
-
-        dispatchUnlockedEvent(); 
-    }
+    await connectToMetamask(); 
+    window.userAddress = window.ethereum.selectedAddress; 
+    await fetchUserData(); 
+    dispatchUnlockedEvent(); 
 }
 
 const ethereumButton = document.getElementById('eth-button');
-ethereumButton.addEventListener('click', () => {
-    connectToMetamask(); 
-    ethereumButton.textContent = window.ethereum.selectedAddress;
+ethereumButton.addEventListener('click', async () => {
+    await connectToMetamask(); 
+    ethereumButton.textContent = "Log out";
+    window.userAddress = window.ethereum.selectedAddress; 
+    await fetchUserData(); 
+    dispatchUnlockedEvent(); 
 }); 
 
 async function connectToMetamask() { 
@@ -28,13 +30,10 @@ async function connectToMetamask() {
 }
 
 async function fetchUserData() {
-    console.log('fetching user data');
     const result = await instance.methods.getMap()
     .call({
         from:  window.userAddress
     }); 
-    console.log(result); 
-
     const staked = await instance.methods.getStaked()
     .call({
         from: window.userAddress
@@ -49,32 +48,18 @@ async function fetchUserData() {
     dispatchUpdateMapEvent(result); 
 }
 
-
-function dispatchUnlockedEvent() {
-    var onUnlocked = new CustomEvent('onUnlocked', {
-        bubbles: false, 
-        detail: {
-
-         },
-    });
-
-    window.dispatchEvent(onUnlocked); 
+function dispatchLoadGameEngine() {
+    var loadGameEngine = new CustomEvent('loadGameEngine');
+    window.dispatchEvent(loadGameEngine); 
 }
 
-function dispatchLoadGameEngine() {
-    var loadGameEngine = new CustomEvent('loadGameEngine', {
-        bubbles: false, 
-        detail: {
-
-         },
-    });
-
-    window.dispatchEvent(loadGameEngine); 
+function dispatchUnlockedEvent() {
+    var onUnlocked = new CustomEvent('onUnlocked');
+    window.dispatchEvent(onUnlocked); 
 }
 
 function dispatchUpdateMapEvent(result) {
     var onUpdateMap = new CustomEvent('onUpdateMap', {
-        bubbles: false, 
         detail: {
             'array': result 
          },

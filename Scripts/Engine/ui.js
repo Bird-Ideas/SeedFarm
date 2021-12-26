@@ -93,12 +93,11 @@ export class UI {
         const shopBtn = new Button("SHOP", shopBtnPosX, shopBtnPosY, 
             shopBtnW, shopBtnH, this.shopButtonClicked.bind(this));
 
-        var address = window.userAddress; 
-        const addressLbl = new Label(address, CWIDTH/2, 30); 
+        this.addressLbl = new Label("Address: ", CWIDTH/2, 30); 
 
         this.DBG_BLD_LBL = new Label("Buildings: ", 30, 30); 
         this.DBG_STK_LBL = new Label("Staked: ", 30, 60); 
-        this.objects["general"] = new Panel(shopBtn, addressLbl, this.DBG_BLD_LBL, this.DBG_STK_LBL); 
+        this.objects["general"] = new Panel(shopBtn, this.addressLbl, this.DBG_BLD_LBL, this.DBG_STK_LBL); 
 
 
         const shopBgrnd = new Background(0, 0, CWIDTH, CHEIGHT, 0.7); 
@@ -140,7 +139,7 @@ export class UI {
     }
 
     getDataFromProvider() {
-        this.address = window.userAddress; 
+        this.addressLbl.text = window.userAddress; 
         this.DBG_BLD_LBL.text = DATA_PROVIDER.GetBuildingCount(); 
         this.DBG_STK_LBL.text = DATA_PROVIDER.GetStaked(); 
     }
@@ -176,7 +175,6 @@ export class UI {
 
     drawBackground(background) {
         this._ctx.fillStyle = `rgba(255, 255, 255, ${background.a}`
-        //._ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; 
         this._ctx.fillRect(background.x, background.y, 
             background.w, background.h); 
     }

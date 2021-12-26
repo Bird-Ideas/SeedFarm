@@ -34,8 +34,6 @@ export default class GameMap {
         this._mask[i][j] = array[count++];
       }
     }
-    
-    //this.dispatchMapInitializedEvent(); 
   }
 
   setMaskValue(e) {
@@ -44,7 +42,7 @@ export default class GameMap {
     if (row < 0 || row > 9 || col < 0 || col > 9) return;
     if (this._mask[row][col] == 0) {
       this._mask[row][col] = this.currentBuilding;
-      var tileId = row * 8 + col; 
+      var tileId = row * 9 + col; 
       this.dispatchBuildingPlacedEvent(tileId); 
     }
   }
@@ -59,13 +57,7 @@ export default class GameMap {
       this.currentBuilding = building;
     }
   }
-/*
-  dispatchMapInitializedEvent() {
-    var onMapInitialized = new CustomEvent("onMapInitialized");
 
-    window.dispatchEvent(onMapInitialized); 
-  }
-*/
   dispatchBuildingPlacedEvent(tileId) {
     var onBuildingPlaced = new CustomEvent('onBuildingPlaced', {
       detail: {

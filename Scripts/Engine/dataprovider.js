@@ -1,9 +1,5 @@
 export default class DataProvider {
     
-    constructor(){
-        
-    }
-
     SetStaked(staked) {
         this._staked = staked; 
         this.dispatchDataProviderChanged(); 
@@ -24,7 +20,6 @@ export default class DataProvider {
 
     dispatchDataProviderChanged() {
         var onDataProviderChanged = new CustomEvent('onDataProviderChanged');
-
         window.dispatchEvent(onDataProviderChanged); 
     }
 }
