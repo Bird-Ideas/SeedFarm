@@ -23,7 +23,9 @@
   "directories": {
     "test": "test"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "solidity-coverage": "^0.7.17"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Bird-Ideas/SeedFarm.git"
