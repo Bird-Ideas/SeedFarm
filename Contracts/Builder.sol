@@ -45,13 +45,9 @@ contract Builder {
      * {structures} is initialized with available structures. 
      */
 
-    constructor(
-        ERC20 _ONE, 
-        ISeedToken _SEED
-    ) {
+    constructor(ISeedToken _SEED) {
         owner = msg.sender; 
 
-        ONE = _ONE; 
         SEED = _SEED; 
 
         Structure storage house = structures[1]; 
@@ -106,10 +102,16 @@ contract Builder {
         staking returns (bool) {
 
         uint8 currentStruct = map[msg.sender][_pos]; 
-        if(currentStruct == 0) return false; 
+        if(currentStruct == 0) revert("Empty tile"); 
 
         withdrawTileYield(_pos, currentStruct); 
-        ONE.transfer(msg.sender, structures[currentStruct].price); 
+        payable(msg.sender).transfer(structures[currentStruct].price); 
+
+        map[msg.sender][_pos] = 0; 
+        housesCount[msg.sender]--; 
+        if(housesCount[msg.sender] == 0) {
+            isStaking[msg.sender] = false;    
+        }
 
         emit Unstake(msg.sender, structures[currentStruct].price); 
         return true; 
@@ -129,35 +131,47 @@ contract Builder {
 
     function withdrawTileYield(uint8 _pos, uint8 _sId) public 
         staking returns (bool) {
+
+        uint8 currentStruct = map[msg.sender][_pos]; 
+        if(currentStruct == 0) revert("Empty tile"); 
+
+        uint256 timeStaked = calculateYieldTime(
+            stakedTime[msg.sender][_pos], 
+            structures[_sId].time
+        ); 
+        stakedTime[msg.sender][_pos] = 0; 
         
-        uint256 reward = calculateReward(_pos, _sId);  
+        uint256 reward = calculateReward(
+            timeStaked, 
+            _sId
+        );  
         SEED.mint(msg.sender, reward); 
 
         emit YieldWithdraw(msg.sender); 
 
         return true; 
     }
-    
-    /**
-     * @dev Returns amount of yield from a structure. 
-     */
-
-     function calculateReward(uint8 _pos, uint8 _sId) public view returns (uint256) {
-        uint256 farmingTime = calculateYieldTime(_pos, _sId); 
-        uint256 reward = structures[_sId].rate * farmingTime;
-        return reward; 
-    }
 
     /**
      * @dev Returns time while structure was accumulating tokens. 
      */
 
-    function calculateYieldTime(uint8 _pos, uint8 _sId) internal view returns (uint256) {
-        uint256 end = block.timestamp;
-        uint256 yieldTime = end - stakedTime[msg.sender][_pos]; 
-        return (yieldTime > structures[_sId].time) ? structures[_sId].time : yieldTime; 
+    function calculateYieldTime(uint256 start, uint256 bound) public
+          returns (uint256) {
+        uint256 yieldTime = block.timestamp - start; 
+        emit calculatedYield(start, block.timestamp); 
+        return (yieldTime > bound) ? bound : yieldTime; 
     } 
+    event calculatedYield(uint256 start, uint256 end); 
+    /**
+     * @dev Returns amount of yield from a structure. 
+     */
 
+    function calculateReward(uint256 _stkTime, uint8 _sId) internal 
+    view returns (uint256) {
+        uint256 reward =  _stkTime * structures[_sId].rate;
+        return reward; 
+    }
 
     /**
      * @dev Returns player's gamemap. 
@@ -184,6 +198,14 @@ contract Builder {
     }
 
     /**
+     * @dev Returns isStaking mapping. 
+     */
+
+    function getIsStaking() external view returns (bool) {
+        return isStaking[msg.sender]; 
+    }
+
+    /**
      * @dev Returns amount of staked tokens. 
      */
 
@@ -204,11 +226,14 @@ contract Builder {
      * tokens or not.  
      */
 
-     function isReadyForWithdraw(uint8 _pos) external view returns (bool) {
+     function isReadyForWithdraw(uint8 _pos) external  returns (bool) {
          uint8 currentStruct = map[msg.sender][_pos]; 
-         if(currentStruct == 0) return false; 
-         return (calculateYieldTime(_pos, currentStruct) 
-            == structures[currentStruct].time); 
+         if(currentStruct == 0) revert("Empty tile");  
+
+         return (calculateYieldTime(
+            stakedTime[msg.sender][_pos], 
+            structures[currentStruct].time
+            ) == structures[currentStruct].time); 
      }
 
     /**
@@ -222,7 +247,7 @@ contract Builder {
     }
 
     /**
-     * @dev Requires 
+     * @dev Requires price to be in price mapping. 
      */
 
     modifier priced(uint8 _sId) {
@@ -231,11 +256,19 @@ contract Builder {
         _; 
     }
 
+    /**
+     * @dev Requires price to be in price mapping. 
+     */
+
     modifier unique(uint8 _pos, uint8 _sId) {
         require(map[msg.sender][_pos] != _sId,
         "You have already built this and here"); 
         _; 
     }
+
+    /**
+     * @dev Requires price to be in price mapping. 
+     */
 
     modifier staking() {
         require(isStaking[msg.sender] == true, 
