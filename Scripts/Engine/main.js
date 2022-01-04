@@ -6,7 +6,10 @@ import Mouse from './mouse.js';
 import { UI } from './ui.js'; 
 import Economics from './economics.js'; 
 
-window.addEventListener('loadGameEngine', async () => {
+window.addEventListener('loadGameEngine', loadGameEngine); 
+
+async function loadGameEngine() {
+  window.removeEventListener('loadGameEngine', loadGameEngine); 
   const canvas = document.getElementById("playground");
   const context = canvas.getContext('2d');
 
@@ -20,6 +23,6 @@ window.addEventListener('loadGameEngine', async () => {
 
   const game = new Game(canvas, renderer, ui, map, mouse); 
   game.init(); 
-}); 
+}
 
 

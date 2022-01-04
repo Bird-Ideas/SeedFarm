@@ -37,13 +37,20 @@ export default class Mouse {
         if(window.CURRENT_STATE == STATE.LOCKED){
             return; 
         }
-        else if(window.CURRENT_STATE == STATE.DEFAULT || 
-            window.CURRENT_STATE == STATE.SHOP) {
-                this.dispatchUIClickedEvent(); 
+        else if(window.CURRENT_STATE == STATE.DEFAULT) {
+            this.dispatchUIClickedEvent(); 
+            this.dispatchCollectYieldEvent(); 
         }
         else if (window.CURRENT_STATE == STATE.BUILDING) {
             this.dispatchUIClickedEvent(); 
-            this.dispatchMapChangedEvent(); 
+            this.dispatchMapBuildEvent(); 
+        }
+        else if(window.CURRENT_STATE == STATE.DESTROYING) {
+            this.dispatchUIClickedEvent(); 
+            this.dispatchMapDestroyEvent(); 
+        }
+        else if(window.CURRENT_STATE == STATE.SHOP) {
+            this.dispatchUIClickedEvent(); 
         }
       }
 
@@ -55,15 +62,33 @@ export default class Mouse {
         this._canvas.dispatchEvent(onUIClicked); 
       }
 
-      dispatchMapChangedEvent() {
-        var onMapChanged = new CustomEvent('onMapChanged', {
-            bubbles: true, 
+      dispatchCollectYieldEvent() {
+        var  onCollectYield = new CustomEvent('onCollectYield', {
+            detail: {
+                'tileX': this.tileX, 
+                'tileY': this.tileY
+            },
+        });
+        this._canvas.dispatchEvent(onCollectYield); 
+      }
+
+      dispatchMapBuildEvent() {
+        var onMapChanged = new CustomEvent('onMapBuild', {
             detail: {
                 'tileX': this.tileX, 
                 'tileY': this.tileY
              },
         });
+        this._canvas.dispatchEvent(onMapChanged); 
+      }
 
+      dispatchMapDestroyEvent() {
+        var onMapChanged = new CustomEvent('onMapDestroy', {
+            detail: {
+                'tileX': this.tileX, 
+                'tileY': this.tileY
+             },
+        });
         this._canvas.dispatchEvent(onMapChanged); 
       }
 

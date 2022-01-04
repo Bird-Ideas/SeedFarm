@@ -1,6 +1,6 @@
 import DataProvider from "./dataprovider.js";
 
-export const STATE = Object.freeze({"LOCKED": 0, "DEFAULT":1, "BUILDING": 2, "SHOP":3});
+export const STATE = Object.freeze({"LOCKED": 0, "DEFAULT":1, "BUILDING": 2, "DESTROYING": 3, "SHOP":4});
 export const WIDTH = 128; 
 export const HEIGHT = 64; 
 export const MAP_SIZE = 9; 

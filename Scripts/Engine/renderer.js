@@ -30,12 +30,11 @@ export default class Renderer {
   }
 
   listenForEvents() {
-    window.addEventListener('onShopState', function(e) {
-        this.isCurrentTileEnabled = false;
-    }.bind(this)); 
-
-    window.addEventListener('onBuildingState', function(e) {
-        this.isCurrentTileEnabled = true; 
+    window.addEventListener('enableCurrentTile', function() {
+      this.isCurrentTileEnabled = true; 
+    }.bind(this));
+    window.addEventListener('disableCurrentTile', function() {
+      this.isCurrentTileEnabled = false; 
     }.bind(this));
   }
 
@@ -95,6 +94,10 @@ export default class Renderer {
         }
       }
     }
+  }
+
+  renderReady() {
+
   }
 
   drawTile(image, tilemapX, tilemapY, cellX, cellY, offsetX, offsetY) {

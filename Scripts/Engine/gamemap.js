@@ -19,11 +19,22 @@ export default class GameMap {
     this.listenForEvents();
   }
 
+  setMaskValue(row, col, val) {
+    this._mask[row][col] = val; 
+  }
+
+  getMaskValue(row, col) {
+    return this._mask[row][col];
+  }
+
   listenForEvents() {
     window.addEventListener('onUpdateMap', this.updateMap.bind(this));
-    this._canvas.addEventListener('onMapChanged', this.setMaskValue.bind(this));
-
     window.addEventListener('onBuildingState', this.setCurrentBuilding.bind(this));
+    //window.addEventListener('revertChanges', this.setMaskValue.bind(this))
+
+    this._canvas.addEventListener('onMapBuild', this.buildStructure.bind(this));
+    this._canvas.addEventListener('onMapDestroy', this.destroyStructure.bind(this));
+    this._canvas.addEventListener('onCollectYield', this.collectYield.bind(this));
   }
 
   updateMap(e) {
@@ -36,21 +47,6 @@ export default class GameMap {
     }
   }
 
-  setMaskValue(e) {
-    const row = e.detail.tileX;
-    const col = e.detail.tileY;
-    if (row < 0 || row > 9 || col < 0 || col > 9) return;
-    if (this._mask[row][col] == 0) {
-      this._mask[row][col] = this.currentBuilding;
-      var tileId = row * 9 + col; 
-      this.dispatchBuildingPlacedEvent(tileId); 
-    }
-  }
-
-  getMaskValue(row, col) {
-    return this._mask[row][col];
-  }
-
   setCurrentBuilding(e) {
     const building = e.detail.building;
     if (this.currentBuilding != building) {
@@ -58,13 +54,74 @@ export default class GameMap {
     }
   }
 
-  dispatchBuildingPlacedEvent(tileId) {
-    var onBuildingPlaced = new CustomEvent('onBuildingPlaced', {
+  buildStructure(e) {
+    const row = e.detail.tileX;
+    const col = e.detail.tileY;
+    if(this.checkPosition(row, col) == false) return; 
+    if (this._mask[row][col] != 0) return;
+
+    this._mask[row][col] = this.currentBuilding;
+    const tileId = this.matrixToArray(row, col);
+    this.dispatchSendBuildingPlacedEvent(tileId); 
+  }
+
+  destroyStructure(e) {
+    const row = e.detail.tileX;
+    const col = e.detail.tileY;
+    if(this.checkPosition(row, col) == false) return; 
+    if (this._mask[row][col] == 0) return; 
+
+    const tileId = this.matrixToArray(row, col);
+    this.dispatchSendBuildingDestroyedEvent(tileId); 
+  }
+
+  collectYield(e) {
+    const row = e.detail.tileX;
+    const col = e.detail.tileY;
+    if(this.checkPosition(row, col) == false) return; 
+    if (this._mask[row][col] == 0) return; 
+
+    const tileId = this.matrixToArray(row, col);
+    const selectedBuilding = this._mask[row][col]; 
+    this.dispatchSendCollectYieldEvent(tileId, selectedBuilding); 
+  }
+
+  checkPosition(row, col) { 
+    if (row < 0 || row >= 9 || col < 0 || col >= 9) return false;
+    return true; 
+  }
+
+  matrixToArray(row, col) {
+    return row * 9 + col; 
+  }
+
+  dispatchSendBuildingPlacedEvent(tileId) {
+    var sendBuildingPlaced = new CustomEvent('sendBuildingPlaced', {
       detail: {
-        building: this.currentBuilding,
-        tile: tileId
+        tile: tileId, 
+        building: this.currentBuilding
       },
     });
-    window.dispatchEvent(onBuildingPlaced);
+    window.dispatchEvent(sendBuildingPlaced);
   }
+
+  dispatchSendBuildingDestroyedEvent(tileId) {
+    var sendBuildingDestroyed = new CustomEvent('sendBuildingDestroyed', {
+      detail: {
+        tile: tileId, 
+      },
+    });
+    window.dispatchEvent(sendBuildingDestroyed);
+  }
+
+  dispatchSendCollectYieldEvent(tileId, selectedBuilding) {
+    var sendCollectYield = new CustomEvent('sendCollectYield', {
+      detail: {
+        tile: tileId, 
+        building: selectedBuilding
+      },
+    });
+    window.dispatchEvent(sendCollectYield);
+  }
+  
 }

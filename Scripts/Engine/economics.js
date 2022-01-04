@@ -12,28 +12,85 @@ export default class Economics {
     }
 
     listenForEvents() { 
-        window.addEventListener('onBuildingPlaced', this.buildingPlaced.bind(this)); 
+        window.addEventListener('sendBuildingPlaced', this.buildingPlaced.bind(this));
+        window.addEventListener('sendBuildingDestroyed', this.buildingDestroyed.bind(this)); 
+        window.addEventListener('sendCollectYield', this.collectYield.bind(this));
     }
  
     buildingPlaced(e){
         const _pos = e.detail.tile; 
-        const _bId = e.detail.building;
-
-        instance.methods.setPosition(_pos, _bId)
+        const _sId = e.detail.building;
+        instance.methods.placeStructure(_pos, _sId)
         .send({
             from: window.userAddress, 
-            value: web3.utils.toWei(this.priceDict[_bId]),
-            gas: '100000'
+            value: web3.utils.toWei(this.priceDict[_sId]),
+            gas: '200000'
         }, function(error, result) {
             if(error){
                 console.log(error); 
-                return; 
             } 
             else {
                 console.log(result);
-                this.dispatchFetchDataEvent(); 
             }
+            this.dispatchFetchDataEvent(); 
+        }.bind(this));
+    }
+
+    buildingDestroyed(e) {
+        const _pos = e.detail.tile; 
+      
+        instance.methods.removeStructure(_pos)
+        .send({
+            from: window.userAddress, 
+            gas: '200000'
+        }, function(error, result) {
+            if(error){
+                console.log(error); 
+            } 
+            else {
+                console.log(result);
+            }
+            window.dispatchFetchDataEvent(); 
         }.bind(this)); 
+    }
+
+    collectYield(e) {
+        const _pos = e.detail.tile; 
+        const _sId = e.detail.building; 
+
+        instance.methods.withdrawTileYield(_pos, _sId)
+        .send({
+            from: window.userAddress, 
+            gas: '200000'
+        }, function(error, result) {
+            if(error){
+                console.log(error); 
+            } 
+            else {
+                console.log(result);
+            }
+            this.dispatchFetchDataEvent(); 
+        }.bind(this));
+        console.log("collecting yield", _pos); 
+    }
+
+    removeStructure(e) {
+        const _pos = e.detail.tile; 
+
+        instance.methods.removeStructure(_pos)
+        .send({
+            from: window.userAddress, 
+            gas: '200000'
+        }, function(error, result) {
+            if(error){
+                console.log(error); 
+            } 
+            else {
+                console.log(result);
+            }
+            this.dispatchFetchDataEvent(); 
+        }.bind(this));
+        console.log("Removing structure yield", _pos); 
     }
 
     dispatchFetchDataEvent() {

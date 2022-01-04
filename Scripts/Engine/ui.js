@@ -93,13 +93,25 @@ export class UI {
         const shopBtn = new Button("SHOP", shopBtnPosX, shopBtnPosY, 
             shopBtnW, shopBtnH, this.shopButtonClicked.bind(this));
 
+        const unstkBtnW = 200; 
+        const unstkBtnH = 80; 
+        const unstkBtnPosX =  CWIDTH - shopBtnW - CWIDTH / 100 * 5; 
+        const unstkBtnPosY = shopBtnPosY - unstkBtnH - CHEIGHT/100 * 5; 
+        const unstakeBtn = new Button("UNSTAKE", unstkBtnPosX, unstkBtnPosY,
+            unstkBtnW, unstkBtnH, this.unstakeButtonCliked.bind(this));
+            
         this.addressLbl = new Label("Address: ", CWIDTH/2, 30); 
 
-        this.DBG_BLD_LBL = new Label("Buildings: ", 30, 30); 
-        this.DBG_STK_LBL = new Label("Staked: ", 30, 60); 
-        this.objects["general"] = new Panel(shopBtn, this.addressLbl, this.DBG_BLD_LBL, this.DBG_STK_LBL); 
+        const totalStkLbl = new Label("Total staked:", 30, 30);
+        this.totalStkDataLbl = new Label("Data: ", 210, 30);  
 
+        const pendRewLbl = new Label("Pending:", 30, 60); 
+        this.pendRewDataLbl = new Label("Data: ", 150, 60); 
 
+        this.objects["general"] = new Panel(shopBtn, this.addressLbl, unstakeBtn,
+            totalStkLbl, this.totalStkDataLbl, pendRewLbl, this.pendRewDataLbl); 
+
+        
         const shopBgrnd = new Background(0, 0, CWIDTH, CHEIGHT, 0.7); 
 
         const backBtnW = 100; 
@@ -134,19 +146,19 @@ export class UI {
     listenForEvents() {
         this._canvas.addEventListener('onUIClicked', this.onUIClicked.bind(this)); 
         window.addEventListener('onUnlocked', this.onUnlocked.bind(this)); 
-
         window.addEventListener('onDataProviderChanged', this.getDataFromProvider.bind(this)); 
     }
 
     getDataFromProvider() {
         this.addressLbl.text = window.userAddress; 
-        this.DBG_BLD_LBL.text = DATA_PROVIDER.GetBuildingCount(); 
-        this.DBG_STK_LBL.text = DATA_PROVIDER.GetStaked(); 
+        this.totalStkDataLbl.text = DATA_PROVIDER.GetStaked(); 
+        this.pendRewDataLbl.text = DATA_PROVIDER.GetPending(); 
     }
 
     onUnlocked() {
         this.currentPanel = this.objects["general"]; 
         window.CURRENT_STATE = STATE.DEFAULT; 
+        window.removeEventListener('onUnlocked', this.onUnlocked);
     }
 
     onUIClicked() {
@@ -224,40 +236,26 @@ export class UI {
     shopButtonClicked() {
         window.CURRENT_STATE = STATE.SHOP; 
         this.currentPanel = this.objects["shop"]; 
-        this.dispatchShopStateEvent(); 
+        this.dispatchCurrentTileDisableEvent(); 
+    }
+
+    unstakeButtonCliked() {
+        window.CURRENT_STATE = STATE.DESTROYING; 
+        this.dispatchCurrentTileEnableEvent(); 
     }
 
     escapeButtonClicked() {
         window.CURRENT_STATE = STATE.DEFAULT; 
         this.currentPanel = this.objects["general"];
+
     }
 
     buildBtnClicked(value) { 
         window.CURRENT_STATE = STATE.BUILDING; 
         this.currentPanel = this.objects["general"];
+        this.dispatchCurrentTileEnableEvent(); 
         this.dispatchBuildingStateEvent(value); 
     }
-
-    dispatchDefaultStateEvent() {
-        var onShopState = new CustomEvent('onDefaultState', {
-            detail: {
-                
-             },
-        });
-
-        window.dispatchEvent(onShopState); 
-    }
-
-
-    dispatchShopStateEvent() {
-        var onShopState = new CustomEvent('onShopState', {
-            detail: {
-                
-             },
-        });
-
-        window.dispatchEvent(onShopState); 
-      }
 
     dispatchBuildingStateEvent(value) {
         var onBuildingState = new CustomEvent('onBuildingState', {
@@ -267,4 +265,14 @@ export class UI {
         });
         window.dispatchEvent(onBuildingState); 
       }
+
+    dispatchCurrentTileEnableEvent() {
+        var currentTileEnable = new CustomEvent('enableCurrentTile');
+        window.dispatchEvent(currentTileEnable); 
+    }
+    dispatchCurrentTileDisableEvent() {
+        var currentTileDisable = new CustomEvent('disableCurrentTile');
+        window.dispatchEvent(currentTileDisable); 
+    }
+
 }

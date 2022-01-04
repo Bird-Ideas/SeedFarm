@@ -26,7 +26,6 @@ contract Builder {
     mapping(address => uint256) public staked;
     mapping(address => uint256[81]) public stakedTime; 
 
-    ERC20 public ONE; 
     ISeedToken public SEED; 
     
     /**
@@ -79,6 +78,7 @@ contract Builder {
         map[msg.sender][_pos] = _sId; 
         housesCount[msg.sender]++; 
 
+        staked[msg.sender] += structures[_sId].price;  
         stakedTime[msg.sender][_pos] = block.timestamp; 
 
         emit Stake(msg.sender, msg.value);
@@ -150,6 +150,11 @@ contract Builder {
         emit YieldWithdraw(msg.sender); 
 
         return true; 
+    }
+
+    function pendingYield(uint8 _pos, uint8 _sId) external  
+    staking returns (uint256) {
+        
     }
 
     /**
@@ -226,7 +231,7 @@ contract Builder {
      * tokens or not.  
      */
 
-     function isReadyForWithdraw(uint8 _pos) external  returns (bool) {
+     function isReadyForWithdraw(uint8 _pos) external returns (bool) {
          uint8 currentStruct = map[msg.sender][_pos]; 
          if(currentStruct == 0) revert("Empty tile");  
 

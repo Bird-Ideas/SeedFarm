@@ -7,7 +7,7 @@ window.userAddress = null;
 window.addEventListener('fetch_data', fetchUserData); 
 
 window.onload = async () => {
-    await ethereum.request({ method: 'wallet_switchEthereumChain', params:[{chainId: '0x4'}] });
+    //await ethereum.request({ method: 'wallet_switchEthereumChain', params:[{chainId: '0x4'}] });
     dispatchLoadGameEngine(); 
     await connectToMetamask(); 
     window.userAddress = window.ethereum.selectedAddress; 
@@ -30,22 +30,44 @@ async function connectToMetamask() {
 }
 
 async function fetchUserData() {
-    const result = await instance.methods.getMap()
+    const map = await instance.methods.getMap()
     .call({
         from:  window.userAddress
-    }); 
-    const staked = await instance.methods.getStaked()
-    .call({
-        from: window.userAddress
     }); 
     const houses = await instance.methods.getHouses()
     .call({
         from: window.userAddress
     });
+   const staked = await instance.methods.getStaked()
+   .call({
+       from: window.userAddress
+   }); 
+   const getCurrentTime = await web3.eth.getBlock("latest"); 
+   console.log(getCurrentTime.timestamp);
+   let readyArray = []; 
+   var rewards = 0; 
+   for(var i = 0; i < 81; ++i) {
+       if(map[i] == 0) continue; 
+       console.log("Pos: ", i); 
+       const stakedTime = await instance.methods.getStakedTime(i)
+        .call({
+            from: window.userAddress 
+       });
+       console.log(stakedTime); 
+       const isReadyForWithdraw = await instance.methods.isReadyForWithdraw(i)
+        .call({
+            from: window.userAddress 
+       });
+       if(isReadyForWithdraw){
+           readyArray.push(i); 
+       }
+       console.log(isReadyForWithdraw); 
+   }
 
     DATA_PROVIDER.SetStaked(web3.utils.fromWei(staked)); 
     DATA_PROVIDER.SetBuildingCount(houses); 
-    dispatchUpdateMapEvent(result); 
+    DATA_PROVIDER.SetPendingRewards(rewards); 
+    dispatchUpdateMapEvent(map); 
 }
 
 function dispatchLoadGameEngine() {
@@ -58,10 +80,10 @@ function dispatchUnlockedEvent() {
     window.dispatchEvent(onUnlocked); 
 }
 
-function dispatchUpdateMapEvent(result) {
+function dispatchUpdateMapEvent(map) {
     var onUpdateMap = new CustomEvent('onUpdateMap', {
         detail: {
-            'array': result 
+            'array': map 
          },
     });
 

@@ -9,6 +9,15 @@ export default class DataProvider {
         return this._staked; 
     }
 
+    SetPendingRewards(pending) {
+        this._pending = pending; 
+        this.dispatchDataProviderChanged(); 
+    }
+
+    GetPending() {
+        return this._pending; 
+    }
+
     SetBuildingCount(buildingCount) { 
         this._buildingCount = buildingCount; 
         this.dispatchDataProviderChanged(); 
