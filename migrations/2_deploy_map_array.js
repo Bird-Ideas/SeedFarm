@@ -7,6 +7,7 @@ module.exports = async function (deployer) {
 
   await deployer.deploy(
     builder, 
-    seedInstance.address
+    seedInstance.address, 
+    "0x0000000000000000000000000000000000000001"
   );
 };

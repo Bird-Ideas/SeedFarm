@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.7; 
 
-import "./SeedToken.sol"; 
 import "./ISeedToken.sol"; 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
@@ -16,17 +15,34 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Builder { 
 
-    address public owner; 
+    address immutable public owner; 
+    address immutable public treasury;  
+    uint8 private treasuryFee = 3;
 
-    mapping(address => uint8[81]) public map; 
-    mapping(address => uint256) public housesCount;  
+    uint8 private baseMltpl = 10; 
+    uint256 private maxFarmTime = 24 hours; 
+
+    uint8 private birdBaseMltpl = 5; 
+    uint8 private birdFancyNum = 72; 
+    
+    uint8 private sneedMltpl = 110;   
+    uint256 private genesisBlock; 
+
     mapping(uint => Structure) public structures; 
 
-    mapping(address => bool) public isStaking; 
-    mapping(address => uint256) public staked;
-    mapping(address => uint256[81]) public stakedTime; 
+    mapping(address => Player) public players; 
 
-    ISeedToken public SEED; 
+    ISeedToken immutable public SEED; 
+
+    struct Player {
+        bool isStaking;
+        bool isSneed; 
+        uint8 housesCount; 
+        uint8[81] map;  
+        uint256 staked; 
+        mapping(uint8 => uint256) stakingStart; 
+        mapping(uint8 => uint256) lockedUntil;  
+    }
     
     /**
      * @dev Saves data about structure's price and farming time. 
@@ -37,17 +53,20 @@ contract Builder {
         uint256 rate; 
     } 
   
-
     /** 
      * @dev Sets contract address for {ONE} and {SEED} tokens. 
      * 
      * {structures} is initialized with available structures. 
      */
 
-    constructor(ISeedToken _SEED) {
+    constructor(ISeedToken _SEED, 
+                address _treasury) {
         owner = msg.sender; 
 
         SEED = _SEED; 
+        treasury = _treasury; 
+
+        genesisBlock = block.number; 
 
         Structure storage house = structures[1]; 
         house.price = 0.1 ether; 
@@ -71,15 +90,14 @@ contract Builder {
     function placeStructure(uint8 _pos, uint8 _sId) external 
         priced(_sId) unique(_pos, _sId) payable returns (bool) {
         
-        if(isStaking[msg.sender] == false) {
-            isStaking[msg.sender] = true;            
+        Player storage currentPlayer = players[msg.sender];  
+        if(currentPlayer.isStaking == false) {
+            currentPlayer.isStaking = true; 
         }
-
-        map[msg.sender][_pos] = _sId; 
-        housesCount[msg.sender]++; 
-
-        staked[msg.sender] += structures[_sId].price;  
-        stakedTime[msg.sender][_pos] = block.timestamp; 
+        currentPlayer.map[_pos] = _sId; 
+        currentPlayer.housesCount++; 
+        currentPlayer.staked += structures[_sId].price; 
+        currentPlayer.stakingStart[_pos] = block.timestamp; 
 
         emit Stake(msg.sender, msg.value);
         return true; 
@@ -99,18 +117,19 @@ contract Builder {
      */
 
     function removeStructure(uint8 _pos) external 
-        staking returns (bool) {
+        staking notEmpty(_pos) returns (bool) {
 
-        uint8 currentStruct = map[msg.sender][_pos]; 
-        if(currentStruct == 0) revert("Empty tile"); 
+        Player storage currentPlayer = players[msg.sender];
 
+        uint8 currentStruct = currentPlayer.map[_pos];  
         withdrawTileYield(_pos, currentStruct); 
+        currentPlayer.map[_pos] = 0; 
         payable(msg.sender).transfer(structures[currentStruct].price); 
 
-        map[msg.sender][_pos] = 0; 
-        housesCount[msg.sender]--; 
-        if(housesCount[msg.sender] == 0) {
-            isStaking[msg.sender] = false;    
+        currentPlayer.housesCount--; 
+        currentPlayer.staked -= structures[currentStruct].price; 
+        if(currentPlayer.housesCount == 0) {
+            currentPlayer.isStaking = false;     
         }
 
         emit Unstake(msg.sender, structures[currentStruct].price); 
@@ -130,60 +149,88 @@ contract Builder {
      */
 
     function withdrawTileYield(uint8 _pos, uint8 _sId) public 
-        staking returns (bool) {
-
-        uint8 currentStruct = map[msg.sender][_pos]; 
-        if(currentStruct == 0) revert("Empty tile"); 
-
-        uint256 timeStaked = calculateYieldTime(
-            stakedTime[msg.sender][_pos], 
-            structures[_sId].time
-        ); 
-        stakedTime[msg.sender][_pos] = 0; 
+        staking notEmpty(_pos) returns (bool) {
         
-        uint256 reward = calculateReward(
-            timeStaked, 
-            _sId
-        );  
+        Player storage currentPlayer = players[msg.sender];
+
+        uint256 reward = pendingYield(_pos, _sId); 
+        currentPlayer.stakingStart[_pos] = 0; 
         SEED.mint(msg.sender, reward); 
+        SEED.mint(treasury, reward * 3 / 100); 
 
         emit YieldWithdraw(msg.sender); 
-
         return true; 
     }
 
-    function pendingYield(uint8 _pos, uint8 _sId) external  
-    staking returns (uint256) {
+    function pendingYield(uint8 _pos, uint8 _sId) public   
+        staking view returns (uint256) {
         
+        uint256 timeStaked = calculateYieldTime(
+            players[msg.sender].stakingStart[_pos], 
+            structures[_sId].time
+        ); 
+        
+        uint256 reward = calculateReward(
+            structures[_sId], 
+            timeStaked
+        ); 
+        return reward; 
     }
+
 
     /**
      * @dev Returns time while structure was accumulating tokens. 
      */
 
-    function calculateYieldTime(uint256 start, uint256 bound) public
-          returns (uint256) {
+    function calculateYieldTime(uint256 start, uint256 bound) internal
+        view returns (uint256) {
         uint256 yieldTime = block.timestamp - start; 
-        emit calculatedYield(start, block.timestamp); 
         return (yieldTime > bound) ? bound : yieldTime; 
     } 
-    event calculatedYield(uint256 start, uint256 end); 
     /**
      * @dev Returns amount of yield from a structure. 
      */
 
-    function calculateReward(uint256 _stkTime, uint8 _sId) internal 
-    view returns (uint256) {
-        uint256 reward =  _stkTime * structures[_sId].rate;
+    function calculateReward(uint256 _stkTime, uint256 _rate) internal 
+        pure returns (uint256) {
+        uint256 reward =  _stkTime * _rate ;
         return reward; 
     }
+
+    function calculateReward(
+        Structure memory _struct, 
+        uint256 _stkTime 
+        ) internal view returns (uint256) {
+        uint256 durMltpl = calculateDurationMltpl(_struct.time);
+        uint256 birdMltpl = calculateBirdMltpl();  
+        uint256 reward =  (_stkTime * _struct.rate); //* (baseMltpl * durMltpl) / birdMltpl;
+        return reward; 
+    }
+
+    function calculateDurationMltpl(uint256 time) internal 
+        view returns (uint256) {
+        //return time / maxFarmTime;
+        return 1;   
+    }
+/*
+    function calculateBirdMltpl() internal 
+        view returns (uint256) {
+            uint256 currentBlock = block.number; 
+            uint256 birdCoef = (currentBlock - genesisBlock ) / birdFancyNum;
+            return birdCoef < birdBaseMltpl ? birdCoef : birdBaseMltpl; 
+    }
+*/ 
+    function calculateBirdMltpl() internal 
+        view returns (uint256) {
+            return 1; 
+        }
 
     /**
      * @dev Returns player's gamemap. 
      */
 
     function getMap() external view returns (uint8[81] memory) { 
-        return map[msg.sender]; 
+        return players[msg.sender].map; 
     }
 
      /**
@@ -191,7 +238,7 @@ contract Builder {
      */
 
     function getHouses() external view returns (uint256) {
-        return housesCount[msg.sender]; 
+        return players[msg.sender].housesCount; 
     }    
 
     /**
@@ -207,7 +254,7 @@ contract Builder {
      */
 
     function getIsStaking() external view returns (bool) {
-        return isStaking[msg.sender]; 
+        return players[msg.sender].isStaking; 
     }
 
     /**
@@ -215,7 +262,7 @@ contract Builder {
      */
 
     function getStaked() external view returns (uint256) {
-        return staked[msg.sender]; 
+        return players[msg.sender].staked; 
     }
 
     /**
@@ -223,7 +270,7 @@ contract Builder {
      */
 
     function getStakedTime(uint8 _pos) external view returns (uint256) {
-        return stakedTime[msg.sender][_pos]; 
+        return players[msg.sender].stakingStart[_pos]; 
     }  
 
     /**
@@ -231,14 +278,26 @@ contract Builder {
      * tokens or not.  
      */
 
-     function isReadyForWithdraw(uint8 _pos) external returns (bool) {
-         uint8 currentStruct = map[msg.sender][_pos]; 
-         if(currentStruct == 0) revert("Empty tile");  
-
+     function isReadyForWithdraw(uint8 _pos, uint8 _sId) external 
+        notEmpty(_pos) view returns (bool) {
          return (calculateYieldTime(
-            stakedTime[msg.sender][_pos], 
-            structures[currentStruct].time
-            ) == structures[currentStruct].time); 
+            players[msg.sender].stakingStart[_pos], 
+            structures[_sId].time
+            ) == structures[_sId].time); 
+     }
+
+    /**
+     * @dev Adds new game structure
+     *
+     */
+     function addStructure(uint8 _sId, uint256 price, 
+        uint256 rate, uint256 time) external 
+        onlyOwner returns (bool) {
+
+        Structure memory newStruct = Structure(price, rate, time); 
+        structures[_sId] = newStruct; 
+
+        return true; 
      }
 
     /**
@@ -262,11 +321,11 @@ contract Builder {
     }
 
     /**
-     * @dev Requires price to be in price mapping. 
+     * @dev Requires building to differ from placed one. 
      */
 
     modifier unique(uint8 _pos, uint8 _sId) {
-        require(map[msg.sender][_pos] != _sId,
+        require(players[msg.sender].map[_pos] != _sId,
         "You have already built this and here"); 
         _; 
     }
@@ -276,11 +335,16 @@ contract Builder {
      */
 
     modifier staking() {
-        require(isStaking[msg.sender] == true, 
+        require(players[msg.sender].isStaking == true, 
         "You can't withdraw if you didn't stake"); 
         _; 
     }
 
+    modifier notEmpty(uint8 _pos) {
+        require(players[msg.sender].map[_pos] != 0, 
+        "Tile cannot be empty");
+        _; 
+    }
 
     event Stake(address indexed from, uint256 amount); 
     event Unstake(address indexed from, uint256 amount); 

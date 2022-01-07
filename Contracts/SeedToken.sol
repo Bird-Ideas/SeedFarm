@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract SeedToken is ERC20, Ownable, ISeedToken {
 
     constructor() ERC20("SeedToken", "NEED") {
-        //_mint(msg.sender, 3000 * 10 ** decimals());
+        _mint(msg.sender, 3000 * 10 ** decimals());
     }
 
     function mint(address to, uint256 amount) external override {

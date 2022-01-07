@@ -9,6 +9,6 @@ if(typeof window !== "undefined" && typeof window.ethereum !== "underfined"){
     web3 = new Web3(provider); 
 }*/
 
-const instance = new web3.eth.Contract(builder.abi, '0x3EDff3a6619f5B8612752d8013CE3A259cA19093'); 
+const instance = new web3.eth.Contract(builder.abi, '0x3449E42DA094Bd7C333e7004Ee04d6f3C3BA067E'); 
 
 export { web3, instance };

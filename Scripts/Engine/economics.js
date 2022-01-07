@@ -50,7 +50,7 @@ export default class Economics {
             else {
                 console.log(result);
             }
-            window.dispatchFetchDataEvent(); 
+            this.dispatchFetchDataEvent(); 
         }.bind(this)); 
     }
 

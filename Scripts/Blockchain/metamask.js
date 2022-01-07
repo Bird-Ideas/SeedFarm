@@ -7,7 +7,26 @@ window.userAddress = null;
 window.addEventListener('fetch_data', fetchUserData); 
 
 window.onload = async () => {
-    //await ethereum.request({ method: 'wallet_switchEthereumChain', params:[{chainId: '0x4'}] });
+    try {
+        await ethereum.request({ method: 'wallet_switchEthereumChain', params:[{chainId: '0x6357D2E0'}] });
+    }
+    catch(switchError) {
+        if(switchError.code === 4902) {
+            await ethereum.request({ 
+                method: 'wallet_addEthereumChain', 
+                params: [{
+                chainId: '0x6357D2E0', 
+                chainName: 'Harmony Testnet', 
+                nativeCurrency: {
+                    name: 'ONE',
+                    symbol: 'ONE',
+                    decimals: '18'
+                }, 
+                rpcUrls: ['https://api.s0.b.hmny.io']
+                }]
+            });
+        } 
+    }
     dispatchLoadGameEngine(); 
     await connectToMetamask(); 
     window.userAddress = window.ethereum.selectedAddress; 
@@ -42,10 +61,9 @@ async function fetchUserData() {
    .call({
        from: window.userAddress
    }); 
-   const getCurrentTime = await web3.eth.getBlock("latest"); 
-   console.log(getCurrentTime.timestamp);
    let readyArray = []; 
    var rewards = 0; 
+   var currentReward = 0; 
    for(var i = 0; i < 81; ++i) {
        if(map[i] == 0) continue; 
        console.log("Pos: ", i); 
@@ -54,7 +72,7 @@ async function fetchUserData() {
             from: window.userAddress 
        });
        console.log(stakedTime); 
-       const isReadyForWithdraw = await instance.methods.isReadyForWithdraw(i)
+       const isReadyForWithdraw = await instance.methods.isReadyForWithdraw(i, map[i])
         .call({
             from: window.userAddress 
        });
@@ -62,8 +80,14 @@ async function fetchUserData() {
            readyArray.push(i); 
        }
        console.log(isReadyForWithdraw); 
+       currentReward = await instance.methods.pendingYield(i, map[i])
+       .call({
+           from: window.userAddress
+       }); 
+       console.log(currentReward / (10 ** 18)); 
+       rewards += Number(currentReward / 10 ** 18); 
    }
-
+   
     DATA_PROVIDER.SetStaked(web3.utils.fromWei(staked)); 
     DATA_PROVIDER.SetBuildingCount(houses); 
     DATA_PROVIDER.SetPendingRewards(rewards); 
