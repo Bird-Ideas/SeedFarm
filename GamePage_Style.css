@@ -97,6 +97,10 @@ body {
   margin: 0 auto;
 }
 
+#playground {
+  width: 1280px;
+  height: 640px;
+}
 
 .canvas {
   display: inline-block;

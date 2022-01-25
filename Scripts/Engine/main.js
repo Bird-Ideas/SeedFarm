@@ -12,7 +12,9 @@ async function loadGameEngine() {
   window.removeEventListener('loadGameEngine', loadGameEngine); 
   const canvas = document.getElementById("playground");
   const context = canvas.getContext('2d');
-
+  const scale = 1.5; 
+  canvas.width = 1280 * scale; 
+  canvas.height = 640 * scale; 
   const map = new GameMap(canvas); 
   const loader = new Loader(); 
   await loader.init(); 

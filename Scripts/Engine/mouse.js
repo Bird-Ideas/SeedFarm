@@ -97,19 +97,16 @@ export default class Mouse {
         const height = HEIGHT / 2; 
         
         var determinant = 1 / (2 * width * height);
-        var offGameX = this._game._currentCameraOffset.x; 
-        var offGameY = this._game._currentCameraOffset.y; 
 
-        var offX = (0 + offGameX) * width; 
-        var offY = (6.5 + offGameY) * height + height;
+        var offX = 0.5 * WIDTH; 
+        var offY = 4.5 * HEIGHT - 0.5 * HEIGHT;
 
         var rotA = -(offX * height) - (offY * width); 
         var rotB = (offX * height) - (offY * width); 
-
+        
         var a = (determinant) * (mouseAbsX * height + mouseAbsY * width + rotA);
         var b = (determinant) * (mouseAbsX * (-height) + mouseAbsY * width + rotB); 
-        
         this.tileX = Math.floor(a) - 1;
-        this.tileY = -Math.floor(b); 
+        this.tileY = -Math.floor(b);
       }
 }

@@ -1,6 +1,7 @@
 import { WIDTH, HEIGHT } from "./game.js";
 import { CWIDTH, CHEIGHT } from "./game.js";
 import { MAP_SIZE } from "./game.js";
+import { SCALE } from "./game.js"; 
 export default class Renderer { 
 
   isCurrentTileEnabled = true; 
@@ -57,39 +58,32 @@ export default class Renderer {
     if(this.isCurrentTileEnabled == false) return; 
     this.drawTile(
       this.currentTile,
-      0,
-      0,
       this._game._currentTile.x,
       this._game._currentTile.y,
-      0,
-      4
+      0.5,
+      4.5
     );
   }
 
   renderGround() {
     for (var cellY = 0; cellY < MAP_SIZE ; ++cellY) {
       for (var cellX = 0; cellX < MAP_SIZE; ++cellX) {
-        var currentDraw = this.terrainIndexes[0];
         this.drawTile(
           this.tileAtlas,
-          currentDraw.x,
-          currentDraw.y,
           cellY,
           cellX,
-          0,
-          4
+          0.5,
+          4.5
         );
 
         var maskValue = this._map.getMaskValue(cellY, cellX);
         if (maskValue == 1) {
           this.drawTile(
             this.editedTile,
-            0,
-            0,
             cellY,
             cellX,
-            0,
-            4
+            0.5,
+            4.5
           );
         }
       }
@@ -100,17 +94,19 @@ export default class Renderer {
 
   }
 
-  drawTile(image, tilemapX, tilemapY, cellX, cellY, offsetX, offsetY) {
+  drawTile(image, cellX, cellY, offsetX, offsetY) {
+    var screenX = offsetX * WIDTH + (cellX + cellY) * (WIDTH / 2); 
+    var screenY = offsetY * HEIGHT + (cellX - cellY) * (HEIGHT / 2); 
     this._ctx.drawImage(
       image,
-      WIDTH * tilemapX, //tilemap index X
-      HEIGHT * tilemapY, //tilemap index Y
+      0, 
+      0,
       WIDTH, //tile width
       HEIGHT, //tile height
-      offsetX * WIDTH + (cellX + cellY) * (WIDTH / 2), //screen X
-      offsetY * HEIGHT + (cellX - cellY) * (HEIGHT / 2), //screen Y
-      WIDTH, //tile width
-      HEIGHT //tile height
+      screenX * SCALE, //screen X
+      screenY * SCALE, //screen Y
+      WIDTH * SCALE, //tile width
+      HEIGHT * SCALE //tile height
     );
   }
 }

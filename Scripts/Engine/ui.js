@@ -2,6 +2,7 @@ import { STATE } from "./game.js";
 import { CWIDTH, CHEIGHT } from "./game.js";
 import { DATA_PROVIDER } from "./game.js";
 
+const scale = 1.5; 
  class Label { 
     constructor(text, x, y, color = 'white') {
         this.text = text; 
@@ -188,11 +189,11 @@ export class UI {
     drawBackground(background) {
         this._ctx.fillStyle = `rgba(255, 255, 255, ${background.a}`
         this._ctx.fillRect(background.x, background.y, 
-            background.w, background.h); 
+            background.w * 1.5, background.h * 1.5); 
     }
 
     drawText(text) {
-        this._ctx.font = "22px courier new, monospace"; 
+        this._ctx.font = "40px courier new, monospace"; 
         this._ctx.fillStyle = text.color; 
         this._ctx.fillText(text.text, text.x, text.y); 
     }
@@ -208,13 +209,15 @@ export class UI {
                  this._ctx._lastElementSelected = null; 
              }
         }
-         this._ctx.fillRect(button.x, button.y, 
+        const scaledX = button.x * scale; 
+        const scaledY = button.y * scale; 
+         this._ctx.fillRect(scaledX, scaledY, 
            button.w, button.h); 
          this._ctx.font = "30px courier new, monospace";
          this._ctx.fillStyle = 'black';
          var textSize = this._ctx.measureText(button.label.text);
-         var textX = button.label.x - (textSize.width / 2);
-         var textY = button.label.y + 15/2;
+         var textX = (button.label.x - (textSize.width / 2)) * scale;
+         var textY = (button.label.y + 15/2) * scale;
      
          this._ctx.fillText(button.label.text, textX, textY);
     }
@@ -226,10 +229,10 @@ export class UI {
             0, 
             128, 
             64, 
-            image.x, 
-            image.y, 
-            128 * 2, 
-            64 * 2
+            image.x * 1.5, 
+            image.y * 1.5, 
+            128 * 2 * 1.5, 
+            64 * 2 * 1.5 
         );
     }
 
