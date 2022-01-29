@@ -5,6 +5,7 @@ import { SCALE } from "./game.js";
 export default class Renderer { 
 
   isCurrentTileEnabled = true; 
+  isCurrentBuildingEnabled = false; 
 
   constructor(ctx, map, loader) {
     this._ctx = ctx;
@@ -37,6 +38,11 @@ export default class Renderer {
     window.addEventListener('disableCurrentTile', function() {
       this.isCurrentTileEnabled = false; 
     }.bind(this));
+    window.addEventListener('enableCurrentBuilding', function(e){
+      console.log(e); 
+      this.isCurrentBuildingEnabled = true; 
+      //this.currentBuilding = e.detail. 
+    })
   }
 
   render() {
@@ -44,6 +50,7 @@ export default class Renderer {
     this.renderGrid();
     this.renderGround();
     this.drawCurrentTile();
+    this.drawCurrentBuilding(); 
   }
 
   renderGrid() {
@@ -63,6 +70,13 @@ export default class Renderer {
       0.5,
       4.5
     );
+  }
+
+  drawCurrentBuilding() {
+    if(this.isCurrentBuildingEnabled == false) return; 
+    this.drawTile(
+      
+    ); 
   }
 
   renderGround() {

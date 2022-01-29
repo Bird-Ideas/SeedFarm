@@ -25,7 +25,7 @@ export default class Game {
     this._mouse = mouse;
 
     this._previousElapsed = 0;
-    this._fetchTime = 0; 
+    this._lastFetchTime = 0; 
   }
 
   init() {
@@ -48,9 +48,8 @@ export default class Game {
     // compute delta time in seconds -- also cap it
     var delta = (elapsed - this._previousElapsed) / 1000.0;
     delta = Math.min(delta, 0.25); // maximum delta of 250 ms
-    this._fetchTime += elapsed; 
-    if(this._fetchTime > elapsed) {
-      this._fetchTime = 0; 
+    if(elapsed - this._lastFetchTime > 5000) {
+      this._lastFetchTime = elapsed; 
       this.dispatchFetchDataEvent();  
     }
     this._previousElapsed = elapsed;

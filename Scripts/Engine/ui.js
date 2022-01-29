@@ -6,8 +6,8 @@ const scale = 1.5;
  class Label { 
     constructor(text, x, y, color = 'white') {
         this.text = text; 
-        this.x = x; 
-        this.y = y; 
+        this.x = x * scale; 
+        this.y = y * scale; 
         this.color = color; 
     }
 }
@@ -15,10 +15,10 @@ const scale = 1.5;
  class Button {
 
     constructor(text, x, y, width, height, onButtonClicked){
-        this.x = x; 
-        this.y = y; 
-        this.w = width; 
-        this.h = height; 
+        this.x = x * scale; 
+        this.y = y * scale; 
+        this.w = width * scale; 
+        this.h = height * scale;
         this.label = new Label(text, x+width/2, y+height/2)
         this.isHovered = false;   
 
@@ -26,8 +26,8 @@ const scale = 1.5;
     }
 
     updateButton(mouse) { 
-        const isIntersectedX = mouse.x > this.x && mouse.x < this.x + this.w; 
-        const isIntersectedY = mouse.y > this.y && mouse.y < this.y + this.h; 
+        const isIntersectedX = mouse.x * scale > this.x && mouse.x * scale < this.x + this.w; 
+        const isIntersectedY = mouse.y * scale > this.y && mouse.y * scale < this.y + this.h; 
         if(isIntersectedX && isIntersectedY){
             this.isHovered = true; 
         } else { 
@@ -104,10 +104,12 @@ export class UI {
         this.addressLbl = new Label("Address: ", CWIDTH/2, 30); 
 
         const totalStkLbl = new Label("Total staked:", 30, 30);
-        this.totalStkDataLbl = new Label("Data: ", 210, 30);  
+        const a = this._ctx.measureText(totalStkLbl.text)
+        console.log(a.width); 
+        this.totalStkDataLbl = new Label("Data: ", 240, 30);  
 
         const pendRewLbl = new Label("Pending:", 30, 60); 
-        this.pendRewDataLbl = new Label("Data: ", 150, 60); 
+        this.pendRewDataLbl = new Label("Data: ", 175, 60); 
 
         this.objects["general"] = new Panel(shopBtn, this.addressLbl, unstakeBtn,
             totalStkLbl, this.totalStkDataLbl, pendRewLbl, this.pendRewDataLbl); 
@@ -189,19 +191,24 @@ export class UI {
     drawBackground(background) {
         this._ctx.fillStyle = `rgba(255, 255, 255, ${background.a}`
         this._ctx.fillRect(background.x, background.y, 
-            background.w * 1.5, background.h * 1.5); 
+            background.w * scale, background.h * scale); 
     }
 
     drawText(text) {
         this._ctx.font = "40px courier new, monospace"; 
         this._ctx.fillStyle = text.color; 
         this._ctx.fillText(text.text, text.x, text.y); 
+
     }
 
     drawButton(button) { 
         button.updateButton(this._mouse); 
+        this._ctx.fillRect(button.x, button.y, 
+            button.w, button.h); 
         if(button.isHovered) {
-            this._ctx.fillStyle = 'yellow'; 
+            this._ctx.strokeStyle = 'red'; 
+            this._ctx.lineWidth = 10; 
+            this._ctx.strokeRect(button.x, button.y, button.w, button.h);
             this._lastElementSelected = button; 
         } else {
              this._ctx.fillStyle = 'white';
@@ -209,15 +216,14 @@ export class UI {
                  this._ctx._lastElementSelected = null; 
              }
         }
-        const scaledX = button.x * scale; 
-        const scaledY = button.y * scale; 
-         this._ctx.fillRect(scaledX, scaledY, 
-           button.w, button.h); 
+        this._ctx.fillRect(button.x, button.y, 
+            button.w, button.h); 
+        
          this._ctx.font = "30px courier new, monospace";
          this._ctx.fillStyle = 'black';
          var textSize = this._ctx.measureText(button.label.text);
-         var textX = (button.label.x - (textSize.width / 2)) * scale;
-         var textY = (button.label.y + 15/2) * scale;
+         var textX = (button.label.x - (textSize.width / 2));
+         var textY = (button.label.y + 15/2);
      
          this._ctx.fillText(button.label.text, textX, textY);
     }
@@ -250,7 +256,7 @@ export class UI {
     escapeButtonClicked() {
         window.CURRENT_STATE = STATE.DEFAULT; 
         this.currentPanel = this.objects["general"];
-
+        this.dispatchCurrentTileEnableEvent(); 
     }
 
     buildBtnClicked(value) { 
