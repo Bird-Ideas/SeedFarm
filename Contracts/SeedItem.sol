@@ -14,23 +14,25 @@ contract SeedItem is ERC1155, Ownable {
     mapping(uint256 => uint256) private _maxSupply; 
     mapping(uint256 => uint256) private _totalSupply; 
 
-    uint256[] private maxSupply = [100, 1500, 200, 300, 50]; 
     uint256 private counter; 
     uint8 totalItems = 5; 
 
-    address builder; 
 
     constructor() ERC1155("https://sneedfarm.tech/{id}.json") {
-        _mint(msg.sender, 0, 1, ''); 
-        _mint(msg.sender, 2, 1, ''); 
+        _maxSupply[wood] = 200;  
+        _maxSupply[nails] = 300; 
+        _maxSupply[rope] = 150; 
+        _maxSupply[glass] = 300; 
+        _maxSupply[hay] = 150;       
+        _mint(msg.sender, wood, 100, ''); 
+        _mint(msg.sender, nails, 100, ''); 
+        _mint(msg.sender, rope, 100, ''); 
+        _mint(msg.sender, glass, 100, ''); 
+        _mint(msg.sender, hay, 100, ''); 
     }
 
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
-    }
-
-    function totalSupply(uint256 id) public view virtual returns (uint256) {
-        return _totalSupply[id];
     }
 
      function _beforeTokenTransfer(
@@ -45,7 +47,7 @@ contract SeedItem is ERC1155, Ownable {
 
         if (from == address(0)) {
             for (uint256 i = 0; i < ids.length; ++i) {
-                if(_totalSupply[ids[i]] + amounts[i] > maxSupply[ids[i]]) {
+                if(_totalSupply[ids[i]] + amounts[i] > _maxSupply[ids[i]]) {
                     revert("Total supply bigger than maximum supply");
                 }
                 _totalSupply[ids[i]] += amounts[i];
@@ -64,29 +66,39 @@ contract SeedItem is ERC1155, Ownable {
     }
  
     function mint(address account, uint256 id, uint256 amount, bytes memory data)
-        public
-        onlyOwner
+        public onlyOwner returns (bool)
     {
         _mint(account, id, amount, data);
+        return true; 
     }
 
-    function mint(address account, uint256 amount) public onlyOwner
+    function mint(address account, uint256 amount) 
+        public onlyOwner returns (bool)
     {
         uint256 id = randomValue(); 
         _mint(account, id, amount, ''); 
+        return true; 
     }
 
-    function randomValue() public view returns (uint256)
+    function randomValue() internal view returns (uint256)
     {
         return uint(keccak256(abi.encodePacked(block.timestamp, block.difficulty,  
         msg.sender))) % totalItems;
     }
 
     function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
-        public
-        onlyOwner
+        public onlyOwner returns (bool)
     {
         _mintBatch(to, ids, amounts, data);
+        return true; 
+    }
+
+    function maxSupply(uint256 id) external view returns (uint256) {
+        return _maxSupply[id]; 
+    }
+    
+    function totalSupply(uint256 id) public view returns (uint256) {
+        return _totalSupply[id];
     }
     
 }

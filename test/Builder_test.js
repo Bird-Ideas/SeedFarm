@@ -103,6 +103,7 @@ const acc = accounts[0];
         const buildingPos = 3; 
         const buildingId = 1; 
         const expectedBalance = await web3.eth.getBalance(bInstance.address);
+        
 
         await bInstance.placeStructure(
             buildingPos, 
@@ -125,12 +126,14 @@ const acc = accounts[0];
         }); 
 
         const contractBalance = await web3.eth.getBalance(bInstance.address);
-         
+        const blockNumber = await web3.eth.getBlockNumber(); 
+        const blockInfo = await web3.eth.getBlock(blockNumber); 
+
         assert.equal(result.receipt.status, true, "Transaction unsuccessful"); 
         assert.equal(isStaking, false, "Staking");
         assert.equal(map[buildingPos], 0, "Tile is not empty");
         assert.equal(houses, 0, "Different houses count"); 
-        assert.equal(time, 0, "Time is set"); 
+        assert.equal(time, blockInfo.timestamp, "Time is set"); 
         assert.equal(contractBalance, expectedBalance, "contractBalance has different value");  
     }); 
 
@@ -148,7 +151,6 @@ const acc = accounts[0];
             assert(error); 
         }
     }); 
-    
     it('Does not remove structure (empty tile)', async() => {
         const bInstance = await builder.deployed(); 
         const buildingPos = 3; 
@@ -182,6 +184,7 @@ const acc = accounts[0];
         const buildingPos = 5; 
         const buildingId = 1; 
         const hour = 3600; 
+        
 
         const accBalance = await sInstance.balanceOf.call(acc, {from: acc});
 
@@ -200,13 +203,18 @@ const acc = accounts[0];
                 from: acc 
             }
         ); 
+        const blockNumber = await web3.eth.getBlockNumber(); 
+        const blockInfo = await web3.eth.getBlock(blockNumber); 
+
         const currentBalance = await sInstance.balanceOf.call(acc, {from: acc});
         const diff = web3.utils.fromWei((currentBalance.sub(accBalance)).toString()); 
-        const stakedTime = await bInstance.getStakedTime.call(buildingPos, {from: acc}); 
+        const time = await bInstance.getStakedTime.call(buildingPos, {from: acc}); 
+        const pendingYield = await bInstance.pendingYield.call(buildingPos, buildingId, {from: acc}); 
 
+        assert.equal(pendingYield < 10, true); 
         assert.equal(result.receipt.status, true, "Transaction unsuccessful"); 
         assert.equal(diff, hour, "Different amount of tokens minted"); 
-        assert.equal(stakedTime, 0, "Staked time is not zero"); 
+        assert.equal(time.toString(), blockInfo.timestamp.toString(), "Staked time did not udpate"); 
     }); 
 
     it('Withdraws yield (5 hours)', async() => {
@@ -216,7 +224,9 @@ const acc = accounts[0];
         const buildingId = 1; 
         const fourhour = 3600 * 4; 
         const fivehour = 3600 * 5; 
-
+        const blockNumber = await web3.eth.getBlockNumber(); 
+        const blockInfo = await web3.eth.getBlock(blockNumber); 
+        
         const accBalance = await sInstance.balanceOf.call(acc, {from: acc});
 
         await bInstance.placeStructure(
@@ -225,25 +235,23 @@ const acc = accounts[0];
             from: acc, 
             value: web3.utils.toWei("0.1", "ether")
         });
-
+      
         await timeMachine.advanceTime(fivehour); 
-
+       
         const result = await bInstance.withdrawTileYield(
             buildingPos, 
             buildingId, {
                 from: acc 
             }
         ); 
-        const ready = await bInstance.isReadyForWithdraw.call(buildingPos, buildingId, {from: acc}); 
+
         const currentBalance = await sInstance.balanceOf.call(acc, {from: acc});
         const diff = web3.utils.fromWei((currentBalance.sub(accBalance)).toString()); 
         const stakedTime = await bInstance.getStakedTime.call(buildingPos, {from: acc}); 
-        assert.equal(ready, true, "Different time");
         assert.equal(result.receipt.status, true, "Transaction unsuccessful"); 
         assert.equal(diff, fourhour, "Different amount of tokens minted"); 
-        assert.equal(stakedTime, 0, "Staked time is not zero"); 
+        assert.notEqual(stakedTime, blockInfo.timestamp, "Staked time did not update"); 
     }); 
-
     it('Does not withdraw yield (not staking)', async () => {
         const bInstance = await builder.deployed(); 
         const buildingPos = 6; 
