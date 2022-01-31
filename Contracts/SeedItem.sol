@@ -6,16 +6,17 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol"; 
 
 contract SeedItem is ERC1155, Ownable {
-    uint256 private constant wood = 0; 
-    uint256 private constant nails = 1; 
-    uint256 private constant rope = 2; 
-    uint256 private constant glass = 3; 
-    uint256 private constant hay = 4; 
+    uint8 private constant wood = 0; 
+    uint8 private constant nails = 1; 
+    uint8 private constant rope = 2; 
+    uint8 private constant glass = 3; 
+    uint8 private constant hay = 4; 
+    uint8 private totalItems = 5; 
+
+    address private _builder; 
+
     mapping(uint256 => uint256) private _maxSupply; 
     mapping(uint256 => uint256) private _totalSupply; 
-
-    uint256 private counter; 
-    uint8 totalItems = 5; 
 
 
     constructor() ERC1155("https://sneedfarm.tech/{id}.json") {
@@ -24,11 +25,15 @@ contract SeedItem is ERC1155, Ownable {
         _maxSupply[rope] = 150; 
         _maxSupply[glass] = 300; 
         _maxSupply[hay] = 150;       
-        _mint(msg.sender, wood, 100, ''); 
-        _mint(msg.sender, nails, 100, ''); 
-        _mint(msg.sender, rope, 100, ''); 
-        _mint(msg.sender, glass, 100, ''); 
-        _mint(msg.sender, hay, 100, ''); 
+        _mint(address(this), wood, 100, ''); 
+        _mint(address(this), nails, 100, ''); 
+        _mint(address(this), rope, 100, ''); 
+        _mint(address(this), glass, 100, ''); 
+        _mint(address(this), hay, 100, ''); 
+    }
+
+    function setBuilder(address builder) external onlyOwner {
+        _builder = builder; 
     }
 
     function setURI(string memory newuri) public onlyOwner {
@@ -66,14 +71,14 @@ contract SeedItem is ERC1155, Ownable {
     }
  
     function mint(address account, uint256 id, uint256 amount, bytes memory data)
-        public onlyOwner returns (bool)
+        public onlyOwnerBuilder returns (bool)
     {
         _mint(account, id, amount, data);
         return true; 
     }
 
     function mint(address account, uint256 amount) 
-        public onlyOwner returns (bool)
+        public onlyOwnerBuilder returns (bool)
     {
         uint256 id = randomValue(); 
         _mint(account, id, amount, ''); 
@@ -87,9 +92,16 @@ contract SeedItem is ERC1155, Ownable {
     }
 
     function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
-        public onlyOwner returns (bool)
+        public onlyOwnerBuilder returns (bool)
     {
         _mintBatch(to, ids, amounts, data);
+        return true; 
+    }
+
+    function increaseMaxSupply(uint256 id, uint256 max) external 
+        onlyOwner returns (bool) {
+
+        _maxSupply[id] = max; 
         return true; 
     }
 
@@ -99,6 +111,14 @@ contract SeedItem is ERC1155, Ownable {
     
     function totalSupply(uint256 id) public view returns (uint256) {
         return _totalSupply[id];
+    }
+
+    modifier onlyOwnerBuilder {
+        require(
+            msg.sender == owner() || 
+            msg.sender == _msgSender(), 
+        "Can't call owner function"); 
+        _; 
     }
     
 }

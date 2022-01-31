@@ -5,7 +5,7 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol"; 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
-import "./ISeedToken.sol"; 
+import "./SeedToken.sol"; 
 import "./SeedItem.sol";
 
     /**
@@ -19,9 +19,9 @@ import "./SeedItem.sol";
 contract Builder { 
 
     address public _owner; 
-    address public _SEED;
-    address public _SEEDITEM; 
-    address public _receiver;
+    address private _SEED;
+    address private _SEEDITEM; 
+    address private _receiver;
     address private _treasury;  
 
     uint8 private _yieldWithdrawFee = 8;
@@ -49,6 +49,7 @@ contract Builder {
         uint256 price; 
         uint256 time;
         uint256 rate; 
+        uint256 lock; 
     } 
   
     /** 
@@ -65,7 +66,8 @@ contract Builder {
 
         _SEED = SEED; 
         _SEEDITEM = SEEDITEM; 
-        _receiver = receiver;  
+        _receiver = receiver; 
+         
         _treasury = treasury; 
 
         _genesisBlock = block.number; 
@@ -74,11 +76,12 @@ contract Builder {
         house.price = 0.1 ether; 
         house.time = 4 hours; 
         house.rate = 1 ether; 
+        house.lock = 7 days; 
     }
 
-    //
-    // STAKING FUNCTIONS 
-    //
+    // =======================================
+    // =========STAKING FUNCTIONS============= 
+    // =======================================
 
     /**
      * @dev Places a new structure on the map and sets up farming. 
@@ -104,6 +107,8 @@ contract Builder {
         currentPlayer.housesCount++; 
         currentPlayer.staked += _structures[_sId].price; 
         currentPlayer.stakingStart[_pos] = block.timestamp; 
+        currentPlayer.lockedUntil[_pos] = block.timestamp + _structures[_sId].lock; 
+        SeedItem(_SEEDITEM).mint(msg.sender, 1); 
 
         emit Stake(msg.sender, msg.value);
         return true; 
@@ -161,13 +166,15 @@ contract Builder {
 
         uint256 reward = pendingYield(_pos, _sId); 
         currentPlayer.stakingStart[_pos] = block.timestamp; 
-        ISeedToken(_SEED).mint(msg.sender, reward); 
-        ISeedToken(_SEED).mint(_treasury, reward * 3 / 100); 
+        uint256 fee = reward * _yieldWithdrawFee / 100; 
+        SeedToken(_SEED).mint(msg.sender, reward - fee); 
+        SeedToken(_SEED).mint(_treasury, fee); 
+        emit blockDiff(block.timestamp - _genesisBlock); 
 
-        emit YieldWithdraw(msg.sender); 
+        emit YieldWithdraw(msg.sender, reward, fee); 
         return true; 
     }
-
+    event blockDiff(uint256 diff); 
     /**
      * @dev Returns amount of tokens accumulated so far. 
      * 
@@ -200,29 +207,23 @@ contract Builder {
     } 
     /**
      * @dev Returns amount of yield from a structure. 
-     */
-
-    function calculateReward(uint256 _stkTime, uint256 _rate) internal 
-        pure returns (uint256) {
-        uint256 reward =  _stkTime * _rate ;
-        return reward; 
-    }
+     */  
 
     function calculateReward(
         Structure memory _struct, 
         uint256 _stkTime, 
         bool isSpecial
         ) internal view returns (uint256) {
-        uint256 reward =  (_stkTime * _struct.rate) * (block.number - _genesisBlock) / 72;
+        uint256 reward =  (_stkTime * _struct.rate);
         if(isSpecial == true) {
             reward = reward * 110 / 100; 
         }
         return reward; 
     }
 
-    //
-    // NFT COLLECTING 
-    //
+    // =======================================
+    // ===========NFT COLLECTING============== 
+    // =======================================
 
     function collectSpecial(address player) external onlyReceiver returns (bool) {
         Player storage man = _players[player]; 
@@ -230,19 +231,19 @@ contract Builder {
         return true; 
     }
 
-    //
-    // GAME MANAGEMENT 
-    // 
+    // =======================================
+    // ===========GAME MANAGEMENT=============
+    // =======================================
 
     /**
      * @dev Adds new game structure
      *
      */
      function addStructure(uint8 _sId, uint256 price, 
-        uint256 rate, uint256 time) external 
+        uint256 rate, uint256 time, uint256 lock) external 
         onlyOwner returns (bool) {
 
-        Structure memory newStruct = Structure(price, rate, time); 
+        Structure memory newStruct = Structure(price, rate, time, lock); 
         _structures[_sId] = newStruct; 
 
         return true; 
@@ -309,8 +310,6 @@ contract Builder {
         return (yieldTime == _structures[_sId].time); 
      }
 
-   
-
     /**
      * @dev Requires sender to be owner.  
      */
@@ -357,13 +356,23 @@ contract Builder {
         _; 
     }
 
+    /** 
+     * @dev Requires map position not to be empty
+     */ 
+
     modifier notEmpty(uint8 _pos) {
         require(_players[msg.sender].map[_pos] != 0, 
         "Tile cannot be empty");
         _; 
     }
 
+    modifier notLocked(uint8 _pos){
+        require(block.timestamp > _players[msg.sender].lockedUntil[_pos], 
+        "Funds are locked"); 
+        _; 
+    }
+ 
     event Stake(address indexed from, uint256 amount); 
     event Unstake(address indexed from, uint256 amount); 
-    event YieldWithdraw(address indexed from); 
+    event YieldWithdraw(address indexed from, uint256 amount, uint256 fee); 
 }

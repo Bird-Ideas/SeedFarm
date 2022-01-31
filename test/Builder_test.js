@@ -1,6 +1,8 @@
 const timeMachine = require('ganache-time-traveler'); 
 
 const seed = artifacts.require("SeedToken");
+const item = artifacts.require("SeedItem"); 
+const receiver = artifacts.require("SeedItemReceiver");
 const builder = artifacts.require("Builder");
 
 beforeEach(async() => {    
@@ -16,18 +18,10 @@ afterEach(async () => {
 contract('Builder', accounts => {
 
 const acc = accounts[0];
-    it('Has constructor set up', async () => {
-        const bInstance = await builder.deployed();
-        const sInstance = await seed.deployed();  
-        const owner = await bInstance.owner.call({from: acc}); 
-        const seedAddress = await bInstance.SEED.call({from: acc}); 
-
-        assert.equal(owner, accounts[0], "Owner address is different"); 
-        assert.equal(seedAddress, sInstance.address, "SEED address is different");
-    });
-
+  
     it('Places building', async () => {
         const bInstance = await builder.deployed(); 
+        const iInstance = await item.deployed(); 
         const buildingPos = 0; 
         const buildingId = 1; 
         const housesCount = 1; 
@@ -47,6 +41,11 @@ const acc = accounts[0];
                 from: acc
         }); 
         const contractBalance = await web3.eth.getBalance(bInstance.address); 
+        const tokens = await iInstance.balanceOfBatch([acc, acc, acc, acc, acc], [0, 1, 2, 3, 4], {from: acc}); 
+        var nftMinted = 0;
+        for(var i = 0; i < tokens.length; ++i) {
+            nftMinted += tokens[i].toNumber(); 
+        }
 
         assert.equal(result.receipt.status, true, "Transaction unsuccessful"); 
         assert.equal(isStaking, true, "Not staking");
@@ -54,6 +53,7 @@ const acc = accounts[0];
         assert.equal(houses, housesCount, "Different houses counts"); 
         assert.notEqual(time, null, "Time is not set"); 
         assert.equal(contractBalance, web3.utils.toWei("0.1"), "contractBalance has different value");  
+        assert.equal(nftMinted, 1, "Different amount of NFTs minted"); 
     }); 
  
     it('Does not place building (wrong price)', async () => {
@@ -177,7 +177,7 @@ const acc = accounts[0];
             assert(error); 
         }
     }); 
-
+ 
     it('Withdraws yield', async() => {
         const bInstance = await builder.deployed(); 
         const sInstance = await seed.deployed(); 
@@ -252,6 +252,48 @@ const acc = accounts[0];
         assert.equal(diff, fourhour, "Different amount of tokens minted"); 
         assert.notEqual(stakedTime, blockInfo.timestamp, "Staked time did not update"); 
     }); 
+
+    it('Withdraws yield (30 days)', async() => {
+        const bInstance = await builder.deployed(); 
+        const sInstance = await seed.deployed(); 
+        const buildingPos = 5; 
+        const buildingId = 1; 
+        const hour = 3600; 
+        const day = 3600 * 24; 
+        const month = day * 30; 
+        const blockNumber = await web3.eth.getBlockNumber(); 
+        const blockInfo = await web3.eth.getBlock(blockNumber); 
+        
+        const accBalance = await sInstance.balanceOf.call(acc, {from: acc});
+
+        await timeMachine.advanceTime(month); 
+
+        await bInstance.placeStructure(
+            buildingPos, 
+            buildingId, {
+            from: acc, 
+            value: web3.utils.toWei("0.1", "ether")
+        });
+      
+        await timeMachine.advanceTime(hour); 
+       
+        const result = await bInstance.withdrawTileYield(
+            buildingPos, 
+            buildingId, {
+                from: acc 
+            }
+        ); 
+
+        const currentBalance = await sInstance.balanceOf.call(acc, {from: acc});
+        const diff = web3.utils.fromWei((currentBalance.sub(accBalance)).toString()); 
+        const stakedTime = await bInstance.getStakedTime.call(buildingPos, {from: acc}); 
+        assert.equal(result.receipt.status, true, "Transaction unsuccessful"); 
+        assert.equal(diff, hour, "Different amount of tokens minted"); 
+        assert.notEqual(stakedTime, blockInfo.timestamp, "Staked time did not update"); 
+    });
+
+
+
     it('Does not withdraw yield (not staking)', async () => {
         const bInstance = await builder.deployed(); 
         const buildingPos = 6; 
@@ -298,14 +340,3 @@ const acc = accounts[0];
     }); 
 });
 
-contract('SEED', accounts => {
-    const acc = accounts[0];
-
-    it('mints new tokens', async () => {
-        const sInstance = await seed.deployed(); 
-        const tokens = 100; 
-        await sInstance.mint(accounts[1], tokens, {from: acc}); 
-        const result = await sInstance.balanceOf.call(accounts[1], {from: accounts[1]});
-        assert.equal(result.toString(), "100", "Diffent value minted"); 
-    }); 
-}); 
