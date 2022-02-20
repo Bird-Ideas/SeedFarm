@@ -5,6 +5,7 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/access/Ownable.sol"; 
 import "./Builder.sol";
+import "./SeedItem.sol"; 
 
 
 abstract contract ERC1155Receiver is ERC165, IERC1155Receiver {
@@ -15,13 +16,17 @@ abstract contract ERC1155Receiver is ERC165, IERC1155Receiver {
 
 contract SeedItemReceiver is ERC1155Receiver, Ownable {
 
-    uint256 successfulTransactions;  
     mapping(address => mapping(uint256 => uint256)) private _funds; 
     mapping(address => bool) private _isSpecialCollected; 
     address private _builder; 
+    address private _item;
 
     function setBuilder(address builder) external onlyOwner {
         _builder = builder; 
+    }
+
+    function setItem(address item) external onlyOwner {
+        _item = item; 
     }
 
      function onERC1155Received(
@@ -55,15 +60,19 @@ contract SeedItemReceiver is ERC1155Receiver, Ownable {
     function isSpecialCollected(address account) public view returns (bool) {
         return _isSpecialCollected[account]; 
     }
-    function collectSpecial(address account) public returns (bool) {
-        if (_funds[account][0] == 4 && 
-            _funds[account][1] == 2 && 
-            _funds[account][2] == 1 && 
-            _funds[account][3] == 2 && 
-            _funds[account][4] == 3)
+    function collectSpecial(address account, uint8 _pos) public 
+        specialNotCollected returns (bool) {
+        if (_funds[account][0] + _funds[account][1] 
+            + _funds[account][2] + _funds[account][3] 
+            + _funds[account][4] < 3) revert("Not enough NFTs collected");   
         _isSpecialCollected[account] = true;
-        Builder(_builder).collectSpecial(account); 
+        Builder(_builder).collectSpecial(account, _pos); 
         return true; 
     }
 
+    modifier specialNotCollected() {
+        require(_isSpecialCollected[msg.sender] != true, 
+        "You have already collected special. "); 
+        _; 
+    }
 }

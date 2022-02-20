@@ -28,7 +28,6 @@ export default class DataProvider {
     }
 
     SetMaterialCount(materialCount) {
-        console.log(materialCount); 
         this._materialCount = materialCount; 
     }
 

@@ -1,7 +1,6 @@
-import { WIDTH, HEIGHT } from "./game.js";
-import { CWIDTH, CHEIGHT } from "./game.js";
-import { MAP_SIZE } from "./game.js";
-import { SCALE } from "./game.js"; 
+import { WIDTH, HEIGHT, 
+  CWIDTH, CHEIGHT, 
+  MAP_SIZE, SCALE } from "./game.js";
 export default class Renderer { 
 
   isCurrentTileEnabled = true; 

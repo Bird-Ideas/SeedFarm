@@ -51,6 +51,8 @@ contract Builder {
         uint256 rate; 
         uint256 lock; 
     } 
+
+    uint8 private special = 200; 
   
     /** 
      * @dev Sets contract address for {ONE} and {SEED} tokens. 
@@ -77,6 +79,7 @@ contract Builder {
         house.time = 4 hours; 
         house.rate = 1 ether; 
         house.lock = 7 days; 
+
     }
 
     // =======================================
@@ -128,7 +131,7 @@ contract Builder {
      */
 
     function removeStructure(uint8 _pos) external 
-        staking notEmpty(_pos) returns (bool) {
+        staking notEmpty(_pos) notSpecial(_pos) returns (bool) {
 
         Player storage currentPlayer = _players[msg.sender];
         uint8 currentStruct = currentPlayer.map[_pos];  
@@ -160,7 +163,7 @@ contract Builder {
      */
 
     function withdrawTileYield(uint8 _pos, uint8 _sId) public 
-        staking notEmpty(_pos) returns (bool) {
+        staking notEmpty(_pos) notSpecial(_pos) returns (bool) {
         
         Player storage currentPlayer = _players[msg.sender];
 
@@ -214,7 +217,7 @@ contract Builder {
         Structure memory _struct, 
         uint256 _stkTime, 
         bool isSpecial
-        ) internal view returns (uint256) {
+        ) internal pure returns (uint256) {
         uint256 reward =  (_stkTime * _struct.rate);
         if(isSpecial == true) {
             reward = reward * 110 / 100; 
@@ -226,9 +229,10 @@ contract Builder {
     // ===========NFT COLLECTING============== 
     // =======================================
 
-    function collectSpecial(address player) external onlyReceiver returns (bool) {
-        Player storage man = _players[player]; 
+    function collectSpecial(address _player, uint8 _pos) external onlyReceiver returns (bool) {
+        Player storage man = _players[_player]; 
         man.specialCollected = true; 
+        man.map[_pos] = 200; 
         return true; 
     }
 
@@ -321,6 +325,10 @@ contract Builder {
         _; 
     }
 
+    /** 
+     * @notice 
+     */ 
+
     modifier onlyReceiver { 
         require(msg.sender == _receiver, 
         "Can't call receiver function"); 
@@ -348,6 +356,16 @@ contract Builder {
     }
 
     /**
+     * @dev Requires building not to be special. 
+     */
+
+    modifier notSpecial(uint8 _pos) {
+        require(_players[msg.sender].map[_pos] != 200, 
+        "You cannot perform actions on special"); 
+        _; 
+    }
+
+    /**
      * @dev Requires price to be in price mapping. 
      */
 
@@ -366,6 +384,10 @@ contract Builder {
         "Tile cannot be empty");
         _; 
     }
+
+    /**
+     * @dev Requires funds to be withdrawn later than initial lock
+     */
 
     modifier notLocked(uint8 _pos){
         require(block.timestamp > _players[msg.sender].lockedUntil[_pos], 

@@ -25,6 +25,7 @@ contract SeedItem is ERC1155, Ownable {
         _maxSupply[rope] = 150; 
         _maxSupply[glass] = 300; 
         _maxSupply[hay] = 150;       
+        _mint(msg.sender, wood, 100, ''); 
         _mint(address(this), wood, 100, ''); 
         _mint(address(this), nails, 100, ''); 
         _mint(address(this), rope, 100, ''); 
@@ -70,31 +71,10 @@ contract SeedItem is ERC1155, Ownable {
         }
     }
  
-    function mint(address account, uint256 id, uint256 amount, bytes memory data)
-        public onlyOwnerBuilder returns (bool)
-    {
-        _mint(account, id, amount, data);
-        return true; 
-    }
-
     function mint(address account, uint256 amount) 
-        public onlyOwnerBuilder returns (bool)
-    {
-        uint256 id = randomValue(); 
+        public onlyOwnerBuilder returns (bool) {
+        uint256 id = _randomValue(); 
         _mint(account, id, amount, ''); 
-        return true; 
-    }
-
-    function randomValue() internal view returns (uint256)
-    {
-        return uint(keccak256(abi.encodePacked(block.timestamp, block.difficulty,  
-        msg.sender))) % totalItems;
-    }
-
-    function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
-        public onlyOwnerBuilder returns (bool)
-    {
-        _mintBatch(to, ids, amounts, data);
         return true; 
     }
 
@@ -111,6 +91,12 @@ contract SeedItem is ERC1155, Ownable {
     
     function totalSupply(uint256 id) public view returns (uint256) {
         return _totalSupply[id];
+    }
+
+     function _randomValue() internal view returns (uint256)
+    {
+        return uint(keccak256(abi.encodePacked(block.timestamp, block.difficulty,  
+        msg.sender))) % totalItems;
     }
 
     modifier onlyOwnerBuilder {

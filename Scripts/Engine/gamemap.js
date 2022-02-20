@@ -1,6 +1,6 @@
 export default class GameMap {
   currentBuilding = 1;
-
+  special = 200; 
   constructor(canvas) {
     this._canvas = canvas;
 
@@ -30,7 +30,6 @@ export default class GameMap {
   listenForEvents() {
     window.addEventListener('onUpdateMap', this.updateMap.bind(this));
     window.addEventListener('onBuildingState', this.setCurrentBuilding.bind(this));
-    //window.addEventListener('revertChanges', this.setMaskValue.bind(this))
 
     this._canvas.addEventListener('onMapBuild', this.buildStructure.bind(this));
     this._canvas.addEventListener('onMapDestroy', this.destroyStructure.bind(this));
@@ -62,7 +61,11 @@ export default class GameMap {
 
     this._mask[row][col] = this.currentBuilding;
     const tileId = this.matrixToArray(row, col);
-    this.dispatchSendBuildingPlacedEvent(tileId); 
+    if(this.currentBuilding != this.special) {
+      this.dispatchSendBuildingPlacedEvent(tileId); 
+    } else {
+      this.dispatchSendSpecialPlacedEvent(tileId); 
+    }
   }
 
   destroyStructure(e) {
@@ -103,6 +106,15 @@ export default class GameMap {
       },
     });
     window.dispatchEvent(sendBuildingPlaced);
+  }
+
+  dispatchSendSpecialPlacedEvent(tileId) {
+    var sendSpecialPlaced = new CustomEvent('sendSpecialPlaced', {
+      detail: {
+        tile: tileId
+      },
+    });
+    window.dispatchEvent(sendSpecialPlaced);
   }
 
   dispatchSendBuildingDestroyedEvent(tileId) {

@@ -1,90 +1,70 @@
 import { web3, builder } from "./web3.js"
 
-export default class Economics {
+const priceDict = ['0', '0.1', ];
 
-    priceDict = {}; 
+listenForEvents(); 
 
-    constructor(){
+function listenForEvents() { 
+    window.addEventListener('sendBuildingPlaced', buildingPlaced);
+    window.addEventListener('sendSpecialPlaced', specialPlaced); 
+    window.addEventListener('sendBuildingDestroyed', buildingDestroyed); 
+    window.addEventListener('sendCollectYield', collectYield);
+}
 
-        this.priceDict[1] = '0.1'; 
-        this.listenForEvents(); 
-    }
+async function buildingPlaced(e) {
+    const _pos = e.detail.tile; 
+    const _sId = e.detail.building;
+    builder.methods.placeStructure(_pos, _sId)
+    .send({
+        from: window.userAddress, 
+        value: web3.utils.toWei(priceDict[_sId]),
+        gas: '200000'
+    }, function(error, result) {
+        if(error){
+            console.log(error); 
+        } 
+        else {
+            console.log(result);
+        }
+    }); 
+}
 
-    listenForEvents() { 
-        window.addEventListener('sendBuildingPlaced', this.buildingPlaced.bind(this));
-        window.addEventListener('sendBuildingDestroyed', this.buildingDestroyed.bind(this)); 
-        window.addEventListener('sendCollectYield', this.collectYield.bind(this));
-    }
- 
-    buildingPlaced(e){
-        const _pos = e.detail.tile; 
-        const _sId = e.detail.building;
-        builder.methods.placeStructure(_pos, _sId)
-        .send({
-            from: window.userAddress, 
-            value: web3.utils.toWei(this.priceDict[_sId]),
-            gas: '200000'
-        }, function(error, result) {
-            if(error){
-                console.log(error); 
-            } 
-            else {
-                console.log(result);
-            }
-        }.bind(this));
-    }
+async function specialPlaced(e) {
+    // const _pos = e.detail.tile;  
+}
 
-    buildingDestroyed(e) {
-        const _pos = e.detail.tile; 
-      
-        builder.methods.removeStructure(_pos)
-        .send({
-            from: window.userAddress, 
-            gas: '200000'
-        }, function(error, result) {
-            if(error){
-                console.log(error); 
-            } 
-            else {
-                console.log(result);
-            }
-        }.bind(this)); 
-    }
+async function buildingDestroyed(e) {
+    const _pos = e.detail.tile; 
+  
+    builder.methods.removeStructure(_pos)
+    .send({
+        from: window.userAddress, 
+        gas: '200000'
+    }, function(error, result) {
+        if(error){
+            console.log(error); 
+        } 
+        else {
+            console.log(result);
+        }
+    }); 
+}
 
-    collectYield(e) {
-        const _pos = e.detail.tile; 
-        const _sId = e.detail.building; 
+async function collectYield(e) {
+    const _pos = e.detail.tile; 
+    const _sId = e.detail.building; 
 
-        builder.methods.withdrawTileYield(_pos, _sId)
-        .send({
-            from: window.userAddress, 
-            gas: '200000'
-        }, function(error, result) {
-            if(error){
-                console.log(error); 
-            } 
-            else {
-                console.log(result);
-            }
-        }.bind(this));
-        console.log("collecting yield", _pos); 
-    }
-
-    removeStructure(e) {
-        const _pos = e.detail.tile; 
-
-        builder.methods.removeStructure(_pos)
-        .send({
-            from: window.userAddress, 
-            gas: '200000'
-        }, function(error, result) {
-            if(error){
-                console.log(error); 
-            } 
-            else {
-                console.log(result);
-            }
-        }.bind(this));
-        console.log("Removing structure yield", _pos); 
-    }
+    builder.methods.withdrawTileYield(_pos, _sId)
+    .send({
+        from: window.userAddress, 
+        gas: '200000'
+    }, function(error, result) {
+        if(error){
+            console.log(error); 
+        } 
+        else {
+            console.log(result);
+        }
+    });
+    console.log("collecting yield", _pos); 
 }

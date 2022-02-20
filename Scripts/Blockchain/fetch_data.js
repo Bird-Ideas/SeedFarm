@@ -17,7 +17,7 @@ export async function fetchUserData() {
    .call({
        from: window.userAddress
    }); 
-   let readyArray = []; 
+   const readyArray = []; 
    var rewards = 0; 
    var currentReward = 0; 
    for(var i = 0; i < 81; ++i) {
@@ -44,7 +44,7 @@ export async function fetchUserData() {
 
 export async function fetchUserMaterials() {
     const materials = []; 
-    for(var i = 1; i <= 5; ++i) {
+    for(var i = 0; i < 5; ++i) {
         const material = await getMaterial(i); 
         materials.push(material); 
     }

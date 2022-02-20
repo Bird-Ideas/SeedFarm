@@ -4,7 +4,6 @@ import Loader from './loader.js';
 import Renderer from './renderer.js'; 
 import Mouse from './mouse.js'; 
 import { UI } from './ui.js'; 
-import Economics from '../Blockchain/economics.js'; 
 
 window.addEventListener('loadGameEngine', loadGameEngine); 
 
@@ -21,7 +20,6 @@ async function loadGameEngine() {
   const renderer = new Renderer(context, map, loader); 
   const mouse = new Mouse(canvas); 
   const ui = new UI(canvas, context, loader, mouse); 
-  const economics = new Economics(map); 
 
   const game = new Game(canvas, renderer, ui, map, mouse); 
   game.init(); 

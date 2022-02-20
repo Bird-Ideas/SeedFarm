@@ -240,7 +240,7 @@ export class UI {
         window.CURRENT_STATE = STATE.BUILDING; 
         this.currentPanel = this.objects["general"]; 
         this.dispatchCurrentTileEnableEvent(); 
-        this.
+        // this.
     }
 
     dispatchBuildingStateEvent(value) {

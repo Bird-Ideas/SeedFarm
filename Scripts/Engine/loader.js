@@ -9,6 +9,10 @@ export default class Loader {
             await this.loadImage("build", "../Assets/build.png"); 
             await this.loadImage("unstake", "../Assets/unstake.png"); 
             await this.loadImage("inventory", "../Assets/inventory.png"); 
+            await this.loadImage("special", "../Assets/crop.png"); 
+            await this.loadImage("yield", "../Assets/yield.png"); 
+            await this.loadImage("back", "../Assets/back.png"); 
+            await this.loadImage("menubtn", "../Assets/menubtn.png"); 
     }
 
     loadImage(key, src) {

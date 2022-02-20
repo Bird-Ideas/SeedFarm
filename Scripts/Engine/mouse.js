@@ -39,7 +39,6 @@ export default class Mouse {
         }
         else if(window.CURRENT_STATE == STATE.DEFAULT) {
             this.dispatchUIClickedEvent(); 
-            this.dispatchCollectYieldEvent(); 
         }
         else if (window.CURRENT_STATE == STATE.BUILDING) {
             this.dispatchUIClickedEvent(); 
@@ -48,6 +47,10 @@ export default class Mouse {
         else if(window.CURRENT_STATE == STATE.DESTROYING) {
             this.dispatchUIClickedEvent(); 
             this.dispatchMapDestroyEvent(); 
+        }
+        else if(window.CURRENT_STATE == STATE.YIELDING) {
+            this.dispatchUIClickedEvent(); 
+            this.dispatchCollectYieldEvent(); 
         }
         else if(window.CURRENT_STATE == STATE.SHOP) {
             this.dispatchUIClickedEvent(); 

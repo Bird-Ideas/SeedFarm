@@ -1,6 +1,7 @@
 import DataProvider from "./dataprovider.js";
 
-export const STATE = Object.freeze({"LOCKED": 0, "DEFAULT":1, "BUILDING": 2, "DESTROYING": 3, "SHOP":4});
+export const STATE = Object.freeze({"LOCKED": 0, "DEFAULT":1, "BUILDING": 2, 
+  "DESTROYING": 3, "YIELDING":4, "SHOP": 5});
 export const WIDTH = 128; 
 export const HEIGHT = 64; 
 export const MAP_SIZE = 9; 
@@ -32,7 +33,6 @@ export default class Game {
     
     this._renderer.init(this);
     this._mouse.init(this); 
-    this._ui.init(this); 
     
     window.requestAnimationFrame(this.tick.bind(this))
   }
