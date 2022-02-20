@@ -12,15 +12,18 @@ const scale = 1.5;
     }
 }
 
- class Button {
+ class Button { 
 
-    constructor(text, x, y, width, height, onButtonClicked){
+    constructor(text, x, y, width, height, onButtonClicked, image = undefined){
         this.x = x * scale; 
         this.y = y * scale; 
         this.w = width * scale; 
         this.h = height * scale;
-        this.label = new Label(text, x+width/2, y+height/2)
+        if(text != undefined) {
+            this.label = new Label(text, x+width/2, y+height/2)
+        }
         this.isHovered = false;   
+        this.image = image; 
 
         this.onButtonClicked = onButtonClicked; 
     }
@@ -84,37 +87,43 @@ export class UI {
         this._game = game; 
 
         const lockedBgrnd = new Background(0, 0, CWIDTH, CHEIGHT, 1);
-        const lockedLbl = new Label("Connect to Metamask.", 440, 228, 'black');
+        const lockedLbl = new Label("Connect to Metamask.", 500, 300, 'black');
         this.objects["locked"] = new Panel(lockedBgrnd, lockedLbl);
 
-        const shopBtnW = 200; 
+        const shopBtnW = 80; 
         const shopBtnH = 80; 
-        const shopBtnPosX =  CWIDTH - shopBtnW - CWIDTH / 100 * 5; 
+        const shopBtnPosX =  CWIDTH - shopBtnW - CWIDTH / 100 * 3; 
         const shopBtnPosY = CHEIGHT - shopBtnH - CHEIGHT/100 * 5; 
-        const shopBtn = new Button("SHOP", shopBtnPosX, shopBtnPosY, 
-            shopBtnW, shopBtnH, this.shopButtonClicked.bind(this));
+        const shopBtnImage = this._loader.getImage("build"); 
+        const shopBtn = new Button(undefined, shopBtnPosX, shopBtnPosY, 
+            shopBtnW, shopBtnH, this.shopButtonClicked.bind(this), shopBtnImage);
 
-        const unstkBtnW = 200; 
+        const unstkBtnW = 80; 
         const unstkBtnH = 80; 
-        const unstkBtnPosX =  CWIDTH - shopBtnW - CWIDTH / 100 * 5; 
-        const unstkBtnPosY = shopBtnPosY - unstkBtnH - CHEIGHT/100 * 5; 
-        const unstakeBtn = new Button("UNSTAKE", unstkBtnPosX, unstkBtnPosY,
-            unstkBtnW, unstkBtnH, this.unstakeButtonCliked.bind(this));
-            
-        this.addressLbl = new Label("Address: ", CWIDTH/2, 30); 
-
+        const unstkBtnPosX =  CWIDTH - shopBtnW - CWIDTH / 100 * 3; 
+        const unstkBtnPosY = shopBtnPosY - unstkBtnH - 10; 
+        const unstkBtnImage = this._loader.getImage("unstake"); 
+        const unstakeBtn = new Button(undefined, unstkBtnPosX, unstkBtnPosY,
+            unstkBtnW, unstkBtnH, this.unstakeButtonCliked.bind(this), unstkBtnImage);
+        
+        const invntBtnW = 80; 
+        const invntBtnH = 80; 
+        const invntBtnPosX = 30; 
+        const invntBtnPosY = CHEIGHT - invntBtnH - CHEIGHT/100 * 5; 
+        const invntBtnImage = this._loader.getImage("inventory"); 
+        const invntBtn = new Button(undefined, invntBtnPosX, invntBtnPosY, 
+            invntBtnW, invntBtnH, this.inventoryButtonClicked.bind(this), invntBtnImage); 
+        
+        this.addressLbl = new Label("Address: ", CWIDTH/2 + 70, 30); 
         const totalStkLbl = new Label("Total staked:", 30, 30);
-        const a = this._ctx.measureText(totalStkLbl.text)
-        console.log(a.width); 
-        this.totalStkDataLbl = new Label("Data: ", 240, 30);  
-
+        this.totalStkDataLbl = new Label("Data: ", 170, 30);  
         const pendRewLbl = new Label("Pending:", 30, 60); 
-        this.pendRewDataLbl = new Label("Data: ", 175, 60); 
+        this.pendRewDataLbl = new Label("Data: ", 130, 60); 
 
         this.objects["general"] = new Panel(shopBtn, this.addressLbl, unstakeBtn,
-            totalStkLbl, this.totalStkDataLbl, pendRewLbl, this.pendRewDataLbl); 
+            totalStkLbl, this.totalStkDataLbl, pendRewLbl, this.pendRewDataLbl, 
+            invntBtn); 
 
-        
         const shopBgrnd = new Background(0, 0, CWIDTH, CHEIGHT, 0.7); 
 
         const backBtnW = 100; 
@@ -126,7 +135,7 @@ export class UI {
 
         const buildBtnW = 200; 
         const buildBtnH = 80;
-        const buildHousePosX = CWIDTH / 100 * 10;
+        const buildHousePosX = CWIDTH / 10;
         const buildHousePosY = buildBtnH + CHEIGHT / 2; 
         const buildBtn = new Button("BUILD", buildHousePosX, buildHousePosY, 
             buildBtnW, buildBtnH, this.buildBtnClicked.bind(this, 1));
@@ -141,7 +150,23 @@ export class UI {
         const housePriceLbl = new Label("Price: 0.1 ETH", housePriceLblX, housePriceLblY, 'black'); 
 
         this.objects["shop"] = new Panel(shopBgrnd, backBtn, buildBtn, houseImg, housePriceLbl); 
+        
+        const woodLbl = new Label("Wood", 60, 80, 'black'); 
+        this.woodDataLbl = new Label("Pending: ", 150, 80, 'black'); 
+        const nailLbl = new Label("Nails", 60, 110, 'black'); 
+        this.nailDataLbl = new Label("Pending: ", 150, 110, 'black'); 
+        const ropeLbl = new Label("Rope", 60, 140, 'black'); 
+        this.ropeDataLbl = new Label("Pending: ", 150, 140, 'black');
+        const glassLbl = new Label("Glass", 60, 170, 'black'); 
+        this.glassDataLbl = new Label("Pending: ", 150, 170, 'black');  
+        const hayLbl = new Label("Hay", 60, 200, 'black'); 
+        this.hayDataLbl = new Label("Pending: ", 150, 200, 'black');  
+        this.objects["inventory"] = new Panel(shopBgrnd, backBtn, woodLbl, this.woodDataLbl, 
+            nailLbl, this.nailDataLbl, ropeLbl, this.ropeDataLbl, glassLbl, this.glassDataLbl,
+            hayLbl, this.hayDataLbl); 
+
         this.currentPanel = this.objects["locked"]; 
+
         
         this.listenForEvents();
     }
@@ -195,7 +220,7 @@ export class UI {
     }
 
     drawText(text) {
-        this._ctx.font = "40px courier new, monospace"; 
+        this._ctx.font = "40px garamond, serif"; 
         this._ctx.fillStyle = text.color; 
         this._ctx.fillText(text.text, text.x, text.y); 
 
@@ -207,25 +232,29 @@ export class UI {
             button.w, button.h); 
         if(button.isHovered) {
             this._ctx.strokeStyle = 'red'; 
-            this._ctx.lineWidth = 10; 
+            this._ctx.lineWidth = 3; 
             this._ctx.strokeRect(button.x, button.y, button.w, button.h);
             this._lastElementSelected = button; 
         } else {
-             this._ctx.fillStyle = 'white';
+             //this._ctx.fillStyle = 'white';
              if(this._ctx._lastElementSelected == this) {
                  this._ctx._lastElementSelected = null; 
              }
         }
-        this._ctx.fillRect(button.x, button.y, 
-            button.w, button.h); 
+        if(button.image != undefined) {
+            this._ctx.drawImage(button.image, 0, 0, 280, 280, button.x, button.y, button.w, button.h); 
+
+        }
+        //this._ctx.fillRect(button.x, button.y, button.w, button.h); 
+        if(button.label != undefined) {
+            this._ctx.font = "30px garamond, serif";
+            this._ctx.fillStyle = 'black';
+            var textSize = this._ctx.measureText(button.label.text);
+            var textX = (button.label.x - (textSize.width / 2));
+            var textY = (button.label.y + 15/2);
         
-         this._ctx.font = "30px courier new, monospace";
-         this._ctx.fillStyle = 'black';
-         var textSize = this._ctx.measureText(button.label.text);
-         var textX = (button.label.x - (textSize.width / 2));
-         var textY = (button.label.y + 15/2);
-     
-         this._ctx.fillText(button.label.text, textX, textY);
+            this._ctx.fillText(button.label.text, textX, textY);
+        }
     }
 
     drawUIImage(image) {
@@ -252,6 +281,18 @@ export class UI {
         window.CURRENT_STATE = STATE.DESTROYING; 
         this.dispatchCurrentTileEnableEvent(); 
     }
+     
+    inventoryButtonClicked() {
+        window.CURRENT_STATE = STATE.SHOP; 
+        const material = DATA_PROVIDER.GetMaterialCount(); 
+        this.woodDataLbl.text = material[0]; 
+        this.nailDataLbl.text = material[1]; 
+        this.ropeDataLbl.text = material[2]; 
+        this.glassDataLbl.text = material[3]; 
+        this.hayDataLbl.text = material[4]; 
+        this.currentPanel = this.objects["inventory"]; 
+        this.dispatchCurrentTileDisableEvent(); 
+    }
 
     escapeButtonClicked() {
         window.CURRENT_STATE = STATE.DEFAULT; 
@@ -274,7 +315,12 @@ export class UI {
         });
         window.dispatchEvent(onBuildingState); 
       }
-
+    
+    dispatchFetchMaterialsDataEvent() {
+        var fetchMaterialsData = new CustomEvent('fetch_material'); 
+        window.dispatchEvent(fetchMaterialsData);
+    }
+    
     dispatchCurrentTileEnableEvent() {
         var currentTileEnable = new CustomEvent('enableCurrentTile');
         window.dispatchEvent(currentTileEnable); 
@@ -283,5 +329,4 @@ export class UI {
         var currentTileDisable = new CustomEvent('disableCurrentTile');
         window.dispatchEvent(currentTileDisable); 
     }
-
 }

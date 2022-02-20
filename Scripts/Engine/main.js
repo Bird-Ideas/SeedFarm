@@ -4,7 +4,7 @@ import Loader from './loader.js';
 import Renderer from './renderer.js'; 
 import Mouse from './mouse.js'; 
 import { UI } from './ui.js'; 
-import Economics from './economics.js'; 
+import Economics from '../Blockchain/economics.js'; 
 
 window.addEventListener('loadGameEngine', loadGameEngine); 
 

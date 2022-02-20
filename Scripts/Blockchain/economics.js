@@ -1,5 +1,4 @@
-import { DATA_PROVIDER } from "./game.js";
-import { web3, instance } from "../Blockchain/web3.js"; 
+import { web3, builder } from "./web3.js"
 
 export default class Economics {
 
@@ -20,7 +19,7 @@ export default class Economics {
     buildingPlaced(e){
         const _pos = e.detail.tile; 
         const _sId = e.detail.building;
-        instance.methods.placeStructure(_pos, _sId)
+        builder.methods.placeStructure(_pos, _sId)
         .send({
             from: window.userAddress, 
             value: web3.utils.toWei(this.priceDict[_sId]),
@@ -32,14 +31,13 @@ export default class Economics {
             else {
                 console.log(result);
             }
-            this.dispatchFetchDataEvent(); 
         }.bind(this));
     }
 
     buildingDestroyed(e) {
         const _pos = e.detail.tile; 
       
-        instance.methods.removeStructure(_pos)
+        builder.methods.removeStructure(_pos)
         .send({
             from: window.userAddress, 
             gas: '200000'
@@ -50,7 +48,6 @@ export default class Economics {
             else {
                 console.log(result);
             }
-            this.dispatchFetchDataEvent(); 
         }.bind(this)); 
     }
 
@@ -58,7 +55,7 @@ export default class Economics {
         const _pos = e.detail.tile; 
         const _sId = e.detail.building; 
 
-        instance.methods.withdrawTileYield(_pos, _sId)
+        builder.methods.withdrawTileYield(_pos, _sId)
         .send({
             from: window.userAddress, 
             gas: '200000'
@@ -69,7 +66,6 @@ export default class Economics {
             else {
                 console.log(result);
             }
-            this.dispatchFetchDataEvent(); 
         }.bind(this));
         console.log("collecting yield", _pos); 
     }
@@ -77,7 +73,7 @@ export default class Economics {
     removeStructure(e) {
         const _pos = e.detail.tile; 
 
-        instance.methods.removeStructure(_pos)
+        builder.methods.removeStructure(_pos)
         .send({
             from: window.userAddress, 
             gas: '200000'
@@ -88,13 +84,7 @@ export default class Economics {
             else {
                 console.log(result);
             }
-            this.dispatchFetchDataEvent(); 
         }.bind(this));
         console.log("Removing structure yield", _pos); 
-    }
-
-    dispatchFetchDataEvent() {
-        var fetch_data = new CustomEvent('fetch_data');
-        window.dispatchEvent(fetch_data);
     }
 }

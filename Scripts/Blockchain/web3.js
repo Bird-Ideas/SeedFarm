@@ -1,4 +1,6 @@
-import builder from '../Blockchain/Builder.js'; 
+import Builder from './Builder.js'; 
+import Receiver from './Receiver.js'; 
+import Item from './Item.js'; 
 
 let web3; 
 
@@ -9,6 +11,8 @@ if(typeof window !== "undefined" && typeof window.ethereum !== "underfined"){
     web3 = new Web3(provider); 
 }*/
 
-const instance = new web3.eth.Contract(builder.abi, '0x3449E42DA094Bd7C333e7004Ee04d6f3C3BA067E'); 
+const builder = new web3.eth.Contract(Builder.abi, '0x627231cDEeF31871bD163d75f479eA6ad3d42D4a'); 
+const receiver = new web3.eth.Contract(Receiver.abi, '0xa6916a4c47342C65d54fDe8F78841b9F1A3b919C'); 
+const item = new web3.eth.Contract(Item.abi, '0x12d7ccAdc86cC48b3433e32090DCe0FD02C46eec');
 
-export { web3, instance };
+export { web3, builder, receiver, item };

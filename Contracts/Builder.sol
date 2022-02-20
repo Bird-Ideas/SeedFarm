@@ -169,15 +169,13 @@ contract Builder {
         uint256 fee = reward * _yieldWithdrawFee / 100; 
         SeedToken(_SEED).mint(msg.sender, reward - fee); 
         SeedToken(_SEED).mint(_treasury, fee); 
-        emit blockDiff(block.timestamp - _genesisBlock); 
 
         emit YieldWithdraw(msg.sender, reward, fee); 
         return true; 
     }
-    event blockDiff(uint256 diff); 
+
     /**
      * @dev Returns amount of tokens accumulated so far. 
-     * 
      */ 
 
     function pendingYield(uint8 _pos, uint8 _sId) public   
@@ -198,6 +196,9 @@ contract Builder {
 
     /**
      * @dev Returns time while structure was accumulating tokens. 
+     *
+     * @notice This function uses block.timestamp! Don't forget
+     * about it when testing on a local blockchain!
      */
 
     function calculateYieldTime(uint256 start, uint256 bound) internal

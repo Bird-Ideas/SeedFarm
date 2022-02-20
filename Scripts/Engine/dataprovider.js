@@ -27,6 +27,15 @@ export default class DataProvider {
         return this._buildingCount;
     }
 
+    SetMaterialCount(materialCount) {
+        console.log(materialCount); 
+        this._materialCount = materialCount; 
+    }
+
+    GetMaterialCount() {
+        return this._materialCount; 
+    }
+
     dispatchDataProviderChanged() {
         var onDataProviderChanged = new CustomEvent('onDataProviderChanged');
         window.dispatchEvent(onDataProviderChanged); 
