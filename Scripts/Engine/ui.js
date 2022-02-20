@@ -1,75 +1,7 @@
 import { STATE } from "./game.js";
 import { CWIDTH, CHEIGHT } from "./game.js";
 import { DATA_PROVIDER } from "./game.js";
-
-const scale = 1.5; 
- class Label { 
-    constructor(text, x, y, color = 'white') {
-        this.text = text; 
-        this.x = x * scale; 
-        this.y = y * scale; 
-        this.color = color; 
-    }
-}
-
- class Button { 
-
-    constructor(text, x, y, width, height, onButtonClicked, image = undefined){
-        this.x = x * scale; 
-        this.y = y * scale; 
-        this.w = width * scale; 
-        this.h = height * scale;
-        if(text != undefined) {
-            this.label = new Label(text, x+width/2, y+height/2)
-        }
-        this.isHovered = false;   
-        this.image = image; 
-
-        this.onButtonClicked = onButtonClicked; 
-    }
-
-    updateButton(mouse) { 
-        const isIntersectedX = mouse.x * scale > this.x && mouse.x * scale < this.x + this.w; 
-        const isIntersectedY = mouse.y * scale > this.y && mouse.y * scale < this.y + this.h; 
-        if(isIntersectedX && isIntersectedY){
-            this.isHovered = true; 
-        } else { 
-            this.isHovered = false; 
-        }
-    }
-
-}
- class Panel { 
-    constructor(...args){
-        this.isEnabled  = false;
-        this.objects = args; 
-    }
-    
-    setEnabled() {
-        this.objects.forEach(function(item){
-            item.isEnabled = false; 
-        }.bind(this)); 
-    }
-}
-
-class Background { 
-    constructor(x, y, width, height, alpha){
-        this.x = x; 
-        this.y = y; 
-        this.w = width; 
-        this.h = height; 
-        this.a = alpha; 
-        this.color = 'white'; 
-    }
-}
-
-class UIImage {
-    constructor(source, x, y) {
-        this.source = source;
-        this.x = x;
-        this.y = y;  
-    }
-}
+import { Label, Button, UIImage, Panel, Background } from "./ui_element.js";
 
 export class UI { 
 
@@ -81,38 +13,41 @@ export class UI {
         this._ctx = ctx; 
         this._loader = loader; 
         this._mouse = mouse; 
+
+        this.init(); 
     }
 
-    init(game) { 
-        this._game = game; 
+    init() { 
 
         const lockedBgrnd = new Background(0, 0, CWIDTH, CHEIGHT, 1);
         const lockedLbl = new Label("Connect to Metamask.", 500, 300, 'black');
         this.objects["locked"] = new Panel(lockedBgrnd, lockedLbl);
 
-        const shopBtnW = 80; 
-        const shopBtnH = 80; 
-        const shopBtnPosX =  CWIDTH - shopBtnW - CWIDTH / 100 * 3; 
-        const shopBtnPosY = CHEIGHT - shopBtnH - CHEIGHT/100 * 5; 
+        const genBtnW = 80; 
+        const genBtnH = 80; 
+        const shopBtnPosX =  CWIDTH - genBtnW - CWIDTH / 100 * 3; 
+        const shopBtnPosY = CHEIGHT - genBtnH - CHEIGHT/100 * 5; 
         const shopBtnImage = this._loader.getImage("build"); 
-        const shopBtn = new Button(undefined, shopBtnPosX, shopBtnPosY, 
-            shopBtnW, shopBtnH, this.shopButtonClicked.bind(this), shopBtnImage);
+        const shopBtn = new Button(shopBtnPosX, shopBtnPosY, 
+            genBtnW, genBtnH, this.shopButtonClicked.bind(this), shopBtnImage, 280, 280);
 
-        const unstkBtnW = 80; 
-        const unstkBtnH = 80; 
-        const unstkBtnPosX =  CWIDTH - shopBtnW - CWIDTH / 100 * 3; 
-        const unstkBtnPosY = shopBtnPosY - unstkBtnH - 10; 
+        const unstkBtnPosX =  CWIDTH - genBtnW - CWIDTH / 100 * 3; 
+        const unstkBtnPosY = shopBtnPosY - genBtnH - 10; 
         const unstkBtnImage = this._loader.getImage("unstake"); 
-        const unstakeBtn = new Button(undefined, unstkBtnPosX, unstkBtnPosY,
-            unstkBtnW, unstkBtnH, this.unstakeButtonCliked.bind(this), unstkBtnImage);
+        const unstakeBtn = new Button(unstkBtnPosX, unstkBtnPosY,
+            genBtnW, genBtnH, this.unstakeButtonClicked.bind(this), unstkBtnImage, 280, 280);
+
+        const yieldBtnPosX =  shopBtnPosX - genBtnW - 10;
+        const yieldBtnPosY = shopBtnPosY; 
+        const yieldBtnImage = this._loader.getImage("yield"); 
+        const yieldBtn = new Button(yieldBtnPosX, yieldBtnPosY,
+            genBtnW, genBtnH, this.unstakeButtonClicked.bind(this), yieldBtnImage, 280, 280);
         
-        const invntBtnW = 80; 
-        const invntBtnH = 80; 
         const invntBtnPosX = 30; 
-        const invntBtnPosY = CHEIGHT - invntBtnH - CHEIGHT/100 * 5; 
+        const invntBtnPosY = CHEIGHT - genBtnH - CHEIGHT/100 * 5; 
         const invntBtnImage = this._loader.getImage("inventory"); 
-        const invntBtn = new Button(undefined, invntBtnPosX, invntBtnPosY, 
-            invntBtnW, invntBtnH, this.inventoryButtonClicked.bind(this), invntBtnImage); 
+        const invntBtn = new Button(invntBtnPosX, invntBtnPosY, 
+            genBtnW, genBtnH, this.inventoryButtonClicked.bind(this), invntBtnImage, 280, 280); 
         
         this.addressLbl = new Label("Address: ", CWIDTH/2 + 70, 30); 
         const totalStkLbl = new Label("Total staked:", 30, 30);
@@ -122,7 +57,7 @@ export class UI {
 
         this.objects["general"] = new Panel(shopBtn, this.addressLbl, unstakeBtn,
             totalStkLbl, this.totalStkDataLbl, pendRewLbl, this.pendRewDataLbl, 
-            invntBtn); 
+            invntBtn, yieldBtn); 
 
         const shopBgrnd = new Background(0, 0, CWIDTH, CHEIGHT, 0.7); 
 
@@ -130,15 +65,17 @@ export class UI {
         const backBtnH = 40; 
         const backBtnPosX = CWIDTH - backBtnW - CWIDTH / 100 * 5; 
         const backBtnPosY = CHEIGHT / 100 * 3;  
-        const backBtn = new Button("Back", backBtnPosX, backBtnPosY, 
-            backBtnW, backBtnH, this.escapeButtonClicked.bind(this)); 
+        const backBtnImage = this._loader.getImage("back")
+        const backBtn = new Button(backBtnPosX, backBtnPosY, 
+            backBtnW, backBtnH, this.escapeButtonClicked.bind(this), backBtnImage, 200, 80); 
 
         const buildBtnW = 200; 
         const buildBtnH = 80;
         const buildHousePosX = CWIDTH / 10;
         const buildHousePosY = buildBtnH + CHEIGHT / 2; 
-        const buildBtn = new Button("BUILD", buildHousePosX, buildHousePosY, 
-            buildBtnW, buildBtnH, this.buildBtnClicked.bind(this, 1));
+        const buildBtnImage = this._loader.getImage("menubtn"); 
+        const buildBtn = new Button(buildHousePosX, buildHousePosY, 
+            buildBtnW, buildBtnH, this.buildBtnClicked.bind(this, 1), buildBtnImage, 200, 80);
 
         const houseImgSrc = this._loader.getImage("edited"); 
         const houseImgPosX = buildHousePosX - 20;
@@ -161,9 +98,15 @@ export class UI {
         this.glassDataLbl = new Label("Pending: ", 150, 170, 'black');  
         const hayLbl = new Label("Hay", 60, 200, 'black'); 
         this.hayDataLbl = new Label("Pending: ", 150, 200, 'black');  
+        const specBtnW = 100; 
+        const specBtnH = 40; 
+        const specBtnPosX = 60; 
+        const specBtnPosY = 230;  
+        const specBtn = new Button(specBtnPosX, specBtnPosY, 
+        specBtnW, specBtnH, this.specialBtnClicked.bind(this, 2), buildBtnImage, 200, 80);
         this.objects["inventory"] = new Panel(shopBgrnd, backBtn, woodLbl, this.woodDataLbl, 
             nailLbl, this.nailDataLbl, ropeLbl, this.ropeDataLbl, glassLbl, this.glassDataLbl,
-            hayLbl, this.hayDataLbl); 
+            hayLbl, this.hayDataLbl, specBtn); 
 
         this.currentPanel = this.objects["locked"]; 
 
@@ -216,47 +159,28 @@ export class UI {
     drawBackground(background) {
         this._ctx.fillStyle = `rgba(255, 255, 255, ${background.a}`
         this._ctx.fillRect(background.x, background.y, 
-            background.w * scale, background.h * scale); 
+            background.w, background.h); 
     }
-
     drawText(text) {
         this._ctx.font = "40px garamond, serif"; 
         this._ctx.fillStyle = text.color; 
         this._ctx.fillText(text.text, text.x, text.y); 
-
     }
-
     drawButton(button) { 
         button.updateButton(this._mouse); 
-        this._ctx.fillRect(button.x, button.y, 
-            button.w, button.h); 
+     
         if(button.isHovered) {
             this._ctx.strokeStyle = 'red'; 
             this._ctx.lineWidth = 3; 
             this._ctx.strokeRect(button.x, button.y, button.w, button.h);
             this._lastElementSelected = button; 
         } else {
-             //this._ctx.fillStyle = 'white';
              if(this._ctx._lastElementSelected == this) {
                  this._ctx._lastElementSelected = null; 
              }
         }
-        if(button.image != undefined) {
-            this._ctx.drawImage(button.image, 0, 0, 280, 280, button.x, button.y, button.w, button.h); 
-
-        }
-        //this._ctx.fillRect(button.x, button.y, button.w, button.h); 
-        if(button.label != undefined) {
-            this._ctx.font = "30px garamond, serif";
-            this._ctx.fillStyle = 'black';
-            var textSize = this._ctx.measureText(button.label.text);
-            var textX = (button.label.x - (textSize.width / 2));
-            var textY = (button.label.y + 15/2);
-        
-            this._ctx.fillText(button.label.text, textX, textY);
-        }
+        this._ctx.drawImage(button.image, 0, 0, button.ix, button.iy, button.x, button.y, button.w, button.h); 
     }
-
     drawUIImage(image) {
         this._ctx.drawImage(
             image.source, 
@@ -277,8 +201,13 @@ export class UI {
         this.dispatchCurrentTileDisableEvent(); 
     }
 
-    unstakeButtonCliked() {
+    unstakeButtonClicked() {
         window.CURRENT_STATE = STATE.DESTROYING; 
+        this.dispatchCurrentTileEnableEvent(); 
+    }
+
+    yieldButtonClicked() {
+        window.CURRENT_STATE = STATE.YIELDING;
         this.dispatchCurrentTileEnableEvent(); 
     }
      
@@ -307,6 +236,13 @@ export class UI {
         this.dispatchBuildingStateEvent(value); 
     }
 
+    specialBtnClicked(value) {
+        window.CURRENT_STATE = STATE.BUILDING; 
+        this.currentPanel = this.objects["general"]; 
+        this.dispatchCurrentTileEnableEvent(); 
+        this.
+    }
+
     dispatchBuildingStateEvent(value) {
         var onBuildingState = new CustomEvent('onBuildingState', {
             detail: {
@@ -314,7 +250,11 @@ export class UI {
              },
         });
         window.dispatchEvent(onBuildingState); 
-      }
+    }
+
+    dispatchBuildingSpecialEvent() {
+        // var onBuildingSpecial = new CustomEvent('on')
+    }
     
     dispatchFetchMaterialsDataEvent() {
         var fetchMaterialsData = new CustomEvent('fetch_material'); 
