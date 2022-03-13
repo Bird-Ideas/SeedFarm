@@ -46,9 +46,6 @@ contract('Builder', ([minter, alice, treasury]) => {
             this.build_pos, {from: alice}); 
         const contractBalance = await web3.eth.getBalance(this.builder.address); 
 
-        const blockNumber = await web3.eth.getBlockNumber(); 
-        const blockInfo = await web3.eth.getBlock(blockNumber);        
-
         const tokens = await this.item.balanceOfBatch(
             [alice, alice, alice, alice, alice], 
             [0, 1, 2, 3, 4], {from: alice}); 
@@ -61,7 +58,7 @@ contract('Builder', ([minter, alice, treasury]) => {
         assert.equal(isStaking, true, "Not staking");
         assert.equal(map[this.build_pos], this.def_build_id, "Tile is empty");
         assert.equal(houses, 1, "Different houses counts"); 
-        assert.equal(staked, '0.1', "Different value staked"); 
+        assert.equal(web3.utils.fromWei(staked), '0.1', "Different value staked"); 
         assert.notEqual(time, null, "Time is not set"); 
         assert.equal(contractBalance.toString(), web3.utils.toWei('0.1'), "contractBalance has different value");  
         assert.equal(nftMinted, 1, "Different amount of NFTs minted"); 
@@ -233,7 +230,7 @@ contract('Builder', ([minter, alice, treasury]) => {
         const sum = web3.utils.fromWei(currentBalance.add(treasuryBalance)); 
         assert.equal(pendingYield < 10, true); 
         assert.equal(result.receipt.status, true, "Transaction unsuccessful"); 
-        assert.isTrue(sum == 3960 || sum == 3961, "Different amount of tokens minted");
+        assert.isTrue(sum > 3960 && sum < 3962, "Different amount of tokens minted");
     }); 
 
     it('Does not withdraw yield (not staking)', async () => {

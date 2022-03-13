@@ -326,7 +326,7 @@ contract Builder {
     }
 
     /** 
-     * @notice 
+     * @dev Requires sender to be receiver contract.
      */ 
 
     modifier onlyReceiver { 
