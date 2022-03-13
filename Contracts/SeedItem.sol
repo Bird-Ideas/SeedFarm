@@ -25,7 +25,6 @@ contract SeedItem is ERC1155, Ownable {
         _maxSupply[rope] = 150; 
         _maxSupply[glass] = 300; 
         _maxSupply[hay] = 150;       
-        _mint(msg.sender, wood, 100, ''); 
         _mint(address(this), wood, 100, ''); 
         _mint(address(this), nails, 100, ''); 
         _mint(address(this), rope, 100, ''); 

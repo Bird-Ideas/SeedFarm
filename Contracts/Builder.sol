@@ -232,7 +232,7 @@ contract Builder {
     function collectSpecial(address _player, uint8 _pos) external onlyReceiver returns (bool) {
         Player storage man = _players[_player]; 
         man.specialCollected = true; 
-        man.map[_pos] = 200; 
+        man.map[_pos] = special; 
         return true; 
     }
 
@@ -360,7 +360,7 @@ contract Builder {
      */
 
     modifier notSpecial(uint8 _pos) {
-        require(_players[msg.sender].map[_pos] != 200, 
+        require(_players[msg.sender].map[_pos] != special, 
         "You cannot perform actions on special"); 
         _; 
     }
