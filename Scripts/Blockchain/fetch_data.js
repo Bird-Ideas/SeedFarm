@@ -1,15 +1,11 @@
 import { DATA_PROVIDER } from "../Engine/game.js";
-import { web3, builder, receiver, item } from "./web3.js" 
+import { web3, builder, receiver, item } from "./web3.js"; 
 
 window.addEventListener('fetch_data', fetchUserData); 
 window.addEventListener('fetch_material', fetchUserMaterials); 
 
 export async function fetchUserData() {
     const map = await builder.methods.getMap()
-    .call({
-        from:  window.userAddress
-    }); 
-    const houses = await builder.methods.getHouses()
     .call({
         from: window.userAddress
     });
@@ -18,14 +14,13 @@ export async function fetchUserData() {
        from: window.userAddress
    }); 
    const readyArray = []; 
-   var rewards = 0; 
+   var pending = 0; 
    var currentReward = 0; 
    for(var i = 0; i < 81; ++i) {
        if(map[i] == 0) continue; 
        const isReadyForWithdraw = await builder.methods.isReadyForWithdraw(i, map[i])
-        .call({
-            from: window.userAddress 
-       });
+        .call({from: window.userAddress});
+        
        if(isReadyForWithdraw){
            readyArray.push(i); 
        }
@@ -33,12 +28,10 @@ export async function fetchUserData() {
        .call({
            from: window.userAddress
        }); 
-       rewards += Number(currentReward / 10 ** 18); 
+       pending += Number(currentReward / 10 ** 18); 
    }
-   
-    DATA_PROVIDER.SetStaked(web3.utils.fromWei(staked)); 
-    DATA_PROVIDER.SetBuildingCount(houses); 
-    DATA_PROVIDER.SetPendingRewards(rewards); 
+   DATA_PROVIDER.updateDataTick(web3.utils.fromWei(staked), pending); 
+
     dispatchUpdateMapEvent(map); 
 }
 
