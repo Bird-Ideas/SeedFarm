@@ -30,6 +30,7 @@ export default class GameMap {
   listenForEvents() {
     window.addEventListener('onUpdateMap', this.updateMap.bind(this));
     window.addEventListener('onBuildingState', this.setCurrentBuilding.bind(this));
+    window.addEventListener('onSpecialState', this.setCurrentBuilding.bind(this)); 
 
     this._canvas.addEventListener('onMapBuild', this.buildStructure.bind(this));
     this._canvas.addEventListener('onMapDestroy', this.destroyStructure.bind(this));

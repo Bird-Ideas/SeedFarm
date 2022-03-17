@@ -2,11 +2,9 @@ import { STATE } from "./game.js";
 import { CWIDTH, CHEIGHT } from "./game.js";
 import { DATA_PROVIDER } from "./game.js";
 import { Label, Button, UIImage, Panel, Background } from "./ui_element.js";
-
 export class UI { 
 
     objects = {}; 
-
 
     constructor(canvas, ctx, loader, mouse) {
         this._canvas = canvas; 
@@ -18,7 +16,6 @@ export class UI {
     }
 
     init() { 
-
         const lockedBgrnd = new Background(0, 0, CWIDTH, CHEIGHT, 1);
         const lockedLbl = new Label("Connect to Metamask.", 500, 300, 'black');
         this.objects["locked"] = new Panel(lockedBgrnd, lockedLbl);
@@ -41,7 +38,7 @@ export class UI {
         const yieldBtnPosY = shopBtnPosY; 
         const yieldBtnImage = this._loader.getImage("yield"); 
         const yieldBtn = new Button(yieldBtnPosX, yieldBtnPosY,
-            genBtnW, genBtnH, this.unstakeButtonClicked.bind(this), yieldBtnImage, 280, 280);
+            genBtnW, genBtnH, this.yieldButtonClicked.bind(this), yieldBtnImage, 280, 280);
         
         const invntBtnPosX = 30; 
         const invntBtnPosY = CHEIGHT - genBtnH - CHEIGHT/100 * 5; 
@@ -103,7 +100,7 @@ export class UI {
         const specBtnPosX = 60; 
         const specBtnPosY = 230;  
         const specBtn = new Button(specBtnPosX, specBtnPosY, 
-        specBtnW, specBtnH, this.specialBtnClicked.bind(this, 2), buildBtnImage, 200, 80);
+        specBtnW, specBtnH, this.specialBtnClicked.bind(this), buildBtnImage, 200, 80);
         this.objects["inventory"] = new Panel(shopBgrnd, backBtn, woodLbl, this.woodDataLbl, 
             nailLbl, this.nailDataLbl, ropeLbl, this.ropeDataLbl, glassLbl, this.glassDataLbl,
             hayLbl, this.hayDataLbl, specBtn); 
@@ -219,6 +216,7 @@ export class UI {
         this.ropeDataLbl.text = material[2]; 
         this.glassDataLbl.text = material[3]; 
         this.hayDataLbl.text = material[4]; 
+        // const balance = DATA_PROVIDER.GetBalance(); 
         this.currentPanel = this.objects["inventory"]; 
         this.dispatchCurrentTileDisableEvent(); 
     }
@@ -236,11 +234,11 @@ export class UI {
         this.dispatchBuildingStateEvent(value); 
     }
 
-    specialBtnClicked(value) {
+    specialBtnClicked() {
         window.CURRENT_STATE = STATE.BUILDING; 
         this.currentPanel = this.objects["general"]; 
         this.dispatchCurrentTileEnableEvent(); 
-        // this.
+        this.dispatchSpecialStateEvent(); 
     }
 
     dispatchBuildingStateEvent(value) {
@@ -252,8 +250,13 @@ export class UI {
         window.dispatchEvent(onBuildingState); 
     }
 
-    dispatchBuildingSpecialEvent() {
-        // var onBuildingSpecial = new CustomEvent('on')
+    dispatchSpecialStateEvent() {
+        var onSpecialState = new CustomEvent('onSpecialState', {
+            detail: {
+                'building' : 200
+            },
+        }); 
+        window.dispatchEvent(onSpecialState); 
     }
     
     dispatchFetchMaterialsDataEvent() {

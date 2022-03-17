@@ -5,7 +5,7 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol"; 
 
-contract SeedItem is ERC1155, Ownable {
+contract MockItem is ERC1155, Ownable {
     uint8 private constant wood = 0; 
     uint8 private constant nails = 1; 
     uint8 private constant rope = 2; 
@@ -19,25 +19,21 @@ contract SeedItem is ERC1155, Ownable {
     mapping(uint256 => uint256) private _totalSupply; 
 
 
-    constructor() ERC1155("https://sneedfarm.tech/{id}.json") {
-        _maxSupply[wood] = 200;  
-        _maxSupply[nails] = 300; 
-        _maxSupply[rope] = 150; 
-        _maxSupply[glass] = 300; 
-        _maxSupply[hay] = 150;       
-        _mint(address(this), wood, 100, ''); 
-        _mint(address(this), nails, 100, ''); 
-        _mint(address(this), rope, 100, ''); 
-        _mint(address(this), glass, 100, ''); 
-        _mint(address(this), hay, 100, ''); 
+    constructor(address to) ERC1155("https://sneedfarm.tech/{id}.json") {
+        _maxSupply[wood] = 1000;  
+        _maxSupply[nails] = 1000; 
+        _maxSupply[rope] = 1000; 
+        _maxSupply[glass] = 1000; 
+        _maxSupply[hay] = 1000;       
+        _mint(to, wood, 100, ''); 
+        _mint(to, nails, 100, ''); 
+        _mint(to, rope, 100, ''); 
+        _mint(to, glass, 100, ''); 
+        _mint(to, hay, 100, ''); 
     }
 
     function setBuilder(address builder) external onlyOwner {
         _builder = builder; 
-    }
-
-    function setURI(string memory newuri) public onlyOwner {
-        _setURI(newuri);
     }
 
      function _beforeTokenTransfer(

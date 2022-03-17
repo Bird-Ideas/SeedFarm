@@ -1,7 +1,8 @@
 export default class DataProvider {
     
-    SetStaked(staked) {
+    updateDataTick(staked, pending) {
         this._staked = staked; 
+        this._pending = pending; 
         this.dispatchDataProviderChanged(); 
     }
 
@@ -9,22 +10,17 @@ export default class DataProvider {
         return this._staked; 
     }
 
-    SetPendingRewards(pending) {
-        this._pending = pending; 
-        this.dispatchDataProviderChanged(); 
-    }
-
     GetPending() {
         return this._pending; 
     }
 
-    SetBuildingCount(buildingCount) { 
-        this._buildingCount = buildingCount; 
+    SetBalance(balance) {
+        this._balance = balance; 
         this.dispatchDataProviderChanged(); 
     }
 
-    GetBuildingCount() {
-        return this._buildingCount;
+    GetBalance() {
+        return this._balance; 
     }
 
     SetMaterialCount(materialCount) {

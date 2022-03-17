@@ -30,7 +30,6 @@ export default class Game {
   }
 
   init() {
-    
     this._renderer.init(this);
     this._mouse.init(this); 
     
@@ -38,7 +37,6 @@ export default class Game {
   }
  
   tick(elapsed) {
-
     this._currentTile.x = this._mouse.tileX; 
     this._currentTile.y = this._mouse.tileY;
 
