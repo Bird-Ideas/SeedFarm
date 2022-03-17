@@ -8,47 +8,71 @@
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
-    <header class="header">
-      <div class="container">
-        <div class="header__inside">
-          <div class="header__title">SeedFarm</div>
-          <div class="header__nav">
-            <div class="btn Main_Page_btn"><a>Main Page</a></div>
-            <div class="btn"><a href="/GamePage.html">Game</a></div>
-          </div>
-          <div class="metamask__outer">
-            <div id="eth-button" class="metamask">MetaMask</div>
-          </div>
-        </div>
+    <header>
+      <div class="logo">
+        <div class="text"><a href="">Logo</a></div>
+      </div>
+      <div class="nav">
+        <div class="text"><a href="/pages/Play.html">Play</a></div>
+        <div class="text"><a href="/pages/Swap.html">Swap</a></div>
+        <div class="text"><a href="/pages/Trade.html">Trade</a></div>
+      </div>
+      <div class="metamask">
+        <div class="text" id="eth-button">MetaMask</div>
       </div>
     </header>
-    <div class="main">
+    <div class="container_outside">
       <div class="container">
-        <div class="main__inside">
-          <div class="main__inside__stats">
-            <div class="stats__one">
-              <div class="stats__one__name">
-                <p class="stats__one__name__text">Total Player</p>
-              </div>
-              <div class="stats__one__count"><p>10,000+</p></div>
+        <div class="introduce">
+          <div class="introduce_left">
+            <div class="introduce_left_inner">
+              <span>Seedfarm</span>
+              <p>
+                gamifies yield farming, making it easier to understand what's
+                yield farming. (etc)
+              </p>
+              <button class="btn">Try now</button>
             </div>
-            <div class="stats__one">
-              <div class="stats__one__name">
-                <p class="stats__one__name__text">Total value locked</p>
-              </div>
-              <div class="stats__one__count"><p>$322000</p></div>
+          </div>
+          <div class="introduce_right">
+            <div class="introduce_right_inner">
+              <img src="/CRESCO.jpg" class="introduce_img" />
             </div>
-            <div class="stats__one">
-              <div class="stats__one__name">
-                <p class="stats__one__name__text">In-game time</p>
-              </div>
-              <div class="stats__one__count"><p>203,123 hours</p></div>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stats_block">
+            <span>Total player</span>
+            <span>4200</span>
+          </div>
+          <div class="stats_block">
+            <span>In-game time</span>
+            <span>4200</span>
+          </div>
+          <div class="stats_block">
+            <span>TVL</span>
+            <span>4200</span>
+          </div>
+        </div>
+
+        <div class="swap_trade">
+          <div class="swap_trade_inner">
+            <div class="swap_trade_text">
+              <p>Swap whatever you want on Harmony Mainnet</p>
             </div>
+            <button class="btn">Swap</button>
+          </div>
+          <div class="swap_trade_inner">
+            <div class="swap_trade_text">
+              <p>Don't leave your city unmemorized - save it as NFT</p>
+            </div>
+            <button class="btn">Trade</button>
           </div>
         </div>
       </div>
     </div>
-    <footer></footer>
+
     <script type="module" src="Scripts/Engine/main.js"></script>
     <script type="module" src="Scripts/Blockchain/metamask.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>

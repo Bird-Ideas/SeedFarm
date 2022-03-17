@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Play</title>
+    <link rel="stylesheet" href="/index.css" />
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <div class="text"><a href="/index.html">Logo</a></div>
+      </div>
+      <div class="nav">
+        <div class="text"><a href="">Play</a></div>
+        <div class="text"><a href="./Swap.html">Swap</a></div>
+        <div class="text"><a href="./Trade.html">Trade</a></div>
+      </div>
+      <div class="metamask">
+        <div class="text" id="eth-button"><a>MetaMask</a></div>
+      </div>
+    </header>
+    <div class="div_canvas">
+      <canvas id="playground" class="game" width="1280" height="640"></canvas>
+    </div>
+    <script type="module" src="../Scripts/Engine/main.js"></script>
+    <script type="module" src="../Scripts/Blockchain/web3.js"></script>
+    <script type="module" src="../Scripts/Blockchain/metamask.js"></script>
+    <script type="module" src="../Scripts/Blockchain/economics.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+  </body>
+</html>
